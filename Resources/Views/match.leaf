@@ -1,0 +1,18 @@
+#extend("base")
+
+#export("head") {
+	<title>Corner</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet">
+	<link rel="stylesheet" href="/styles/app.css">
+}
+
+#export("body") {
+    <div class="red">
+        <h1 class="score">#(score)</h1>
+    </div>
+
+    <div class="blue">
+        <h1 class="score">#(score)</h1>
+    </div>
+}

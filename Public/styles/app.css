@@ -1,5 +1,6 @@
 * {
 	box-sizing: border-box;
+	font-family: 'Droid Sans', sans-serif;
 }
 
 body, html {
@@ -9,9 +10,9 @@ body, html {
 }
 
 body {
-	font-family: sans-serif;
 	color: #333;
 	position: relative;
+	overflow: hidden;
 }
 
 #droplet {
@@ -21,31 +22,26 @@ body {
     float: left;
 }
 
-.message {
-	position: absolute;
-	width: 256px;
-    height: 64px;
+.red {
+	background-color: #ba4242
+}
+
+.blue {
+	background-color: #366cac
+}
+
+.red, .blue {
+	margin: 0;
+	width: 50%;
+	float: left;
+	height: 100%;
+}
+
+.score {
+	font-family: Verdana;
+	color: white;
+	font-size: 25em;
 	text-align: center;
-	top: 50%;
-	left: 50%;
-	margin-left: -128px;
-    margin-top: -32px;
-    line-height: 0;
-}
-
-.message h1 {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-    line-height: 64px;
-    float: left;
-    font-family: 'Quicksand';
-    font-weight: 500;
-    font-size: 36px;
-}
-
-.message img {
-    height: 100%;
-    display: inline-block;
-    float: left;
+	vertical-align: middle;
+	line-height: 50%;
 }
