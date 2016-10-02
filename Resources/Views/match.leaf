@@ -8,11 +8,12 @@
 }
 
 #export("body") {
+	<p>#(date)</p>
     <div class="red">
-        <h1 class="score">#(score)</h1>
+        <h1 class="score">#(red-score)</h1>
     </div>
 
     <div class="blue">
-        <h1 class="score">#(score)</h1>
+        <h1 class="score">#(blue-score)</h1>
     </div>
 }

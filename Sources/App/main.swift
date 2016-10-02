@@ -2,11 +2,7 @@ import Vapor
 
 let drop = Droplet()
 
-drop.get { req in
-    let lang = req.headers["Accept-Language"]?.string ?? "en"
-    return try drop.view.make("match", [
-    	"score": Node.string("0")
-    ])
-}
+let match = MatchController(droplet: drop)
+drop.resource("/", match)
 
 drop.run()
