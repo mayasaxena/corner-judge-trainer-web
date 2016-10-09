@@ -3,8 +3,12 @@ import Vapor
 let drop = Droplet()
 
 let match = MatchController(droplet: drop)
-drop.resource("/", match)
+drop.resource("match", match)
 
-drop.get("scoring", handler: match.scoring)
+drop.socket("match", "scoring") { request, socket in
+    socket.onText = { socket, text in
+        print(text)
+    }
+}
 
 drop.run()

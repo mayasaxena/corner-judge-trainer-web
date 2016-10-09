@@ -5,6 +5,8 @@
 
     <link href="https://fonts.googleapis.com/css?family=Droid+Sans:400,700" rel="stylesheet">
 	<link rel="stylesheet" href="/styles/app.css">
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="scripts/score.js"></script>
 }
 
 #export("body") {
@@ -41,4 +43,8 @@
 			</div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+		var scoring = Scoring(window.location.host + window.location.pathname + "/scoring")
+	</script>
 }
