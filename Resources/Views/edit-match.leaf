@@ -1,0 +1,29 @@
+#extend("base")
+
+#export("head") {
+	<title>Edit Match #(id)</title>
+	<script type="text/javascript" src="scripts/score.js"></script>
+}
+
+#export("body") {
+    <div class="editing">
+        <div class="red buttons">
+            <div class="body">BODY</div>
+            <div class="head">HEAD</div>
+            <div class="technical">TECHNICAL</div>
+            <div class="kyong-go">KYONG-GO</div>
+            <div class="gam-jeom">GAM-JEOM</div>
+        </div>
+
+        <div class="blue buttons">
+            <div class="body">BODY</div>
+            <div class="head">HEAD</div>
+            <div class="technical">TECHNICAL</div>
+            <div class="kyong-go">KYONG-GO</div>
+            <div class="gam-jeom">GAM-JEOM</div>
+        </div>
+    </div>
+    <script type="text/javascript">
+		var scoring = Scoring(window.location.host + window.location.pathname + "/scoring")
+	</script>
+}
