@@ -217,7 +217,7 @@ extension String {
 
         for _ in 0..<length {
 
-            let randomValue = URandom.int % base.characters.count
+            let randomValue = URandom.uint % UInt(base.characters.count)
 
             randomString += "\(base[base.characters.index(base.startIndex, offsetBy: Int(randomValue))])"
         }

@@ -25,6 +25,10 @@ public final class MatchController {
     public func index(_ request: Request) throws -> ResponseRepresentable {
         return try drop.view.make("match", match.makeNode())
     }
+
+    public func scoring(_ request: Request) throws -> ResponseRepresentable {
+        return "Blue Score: \(match.blueScore)"
+    }
 }
 
 extension MatchController: ResourceRepresentable {
