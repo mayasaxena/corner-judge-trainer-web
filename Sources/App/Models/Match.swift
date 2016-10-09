@@ -9,6 +9,7 @@
 import Vapor
 import Fluent
 import Foundation
+import Random
 
 public final class Match {
 
@@ -135,6 +136,7 @@ extension Match {
             "date" : date.timeStampString,
             "red-score" : redScore.formattedString,
             "blue-score" : blueScore.formattedString,
+            "round" : round,
         ])
     }
 }
@@ -214,7 +216,9 @@ extension String {
         var randomString: String = ""
 
         for _ in 0..<length {
-            let randomValue = arc4random_uniform(UInt32(base.characters.count))
+
+            let randomValue = URandom.int % base.characters.count
+
             randomString += "\(base[base.characters.index(base.startIndex, offsetBy: Int(randomValue))])"
         }
 

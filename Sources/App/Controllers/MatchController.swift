@@ -23,7 +23,6 @@ public final class MatchController {
      on the board and a form to post new items.
      */
     public func index(_ request: Request) throws -> ResponseRepresentable {
-
         return try drop.view.make("match", match.makeNode())
     }
 }
