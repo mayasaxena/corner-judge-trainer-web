@@ -1,21 +1,26 @@
 function Scoring(host) {
     var scoring = this;
-
     scoring.ws = new WebSocket('ws://' + host);
 
-    $('.penalty').click(function() {
-        scoring.send("1");
-        console.log("scored body")
+    $('.body').click(function() {
+        var color = $(this).parent().attr("id");
+        scoring.send("Body", color);
+    });
+
+    $('.head').click(function() {
+        var color = $(this).parent().attr("id");
+        scoring.send("Head", color);
     });
 
     scoring.ws.onmessage = function(event) {
-        var scoringEvent = JSON.parse(event.data);
+        var scoringEvent = event.data;
         console.log("scored " + scoringEvent);
     }
 
-    scoring.send = function(event) {
+    scoring.send = function(event, color) {
         scoring.ws.send(JSON.stringify({
-            'scoring event': event
+            'scoring event': event,
+            'color' : color
         }));
     }
 };

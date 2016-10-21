@@ -2,12 +2,12 @@
 
 #export("head") {
 	<title>Edit Match #(id)</title>
-	<script type="text/javascript" src="scripts/score.js"></script>
+	<script type="text/javascript" src="/scripts/score.js"></script>
 }
 
 #export("body") {
     <div class="editing">
-        <div class="red buttons">
+        <div class="buttons" id="red">
             <div class="body">BODY</div>
             <div class="head">HEAD</div>
             <div class="technical">TECHNICAL</div>
@@ -15,7 +15,7 @@
             <div class="gam-jeom">GAM-JEOM</div>
         </div>
 
-        <div class="blue buttons">
+        <div class="buttons" id="blue">
             <div class="body">BODY</div>
             <div class="head">HEAD</div>
             <div class="technical">TECHNICAL</div>
@@ -24,6 +24,8 @@
         </div>
     </div>
     <script type="text/javascript">
-		var scoring = Scoring(window.location.host + window.location.pathname + "/scoring")
+		var regex = /match\/(.*?)\//
+		var index = regex.exec(window.location.pathname).pop();
+		var scoring = Scoring(window.location.host + "/match/" + index)
 	</script>
 }
