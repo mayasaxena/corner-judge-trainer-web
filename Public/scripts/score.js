@@ -1,6 +1,7 @@
 function Scoring(host) {
     var scoring = this;
     scoring.ws = new WebSocket('ws://' + host);
+    console.log(host);
 
     $('.body').click(function() {
         var color = $(this).parent().attr("id");
