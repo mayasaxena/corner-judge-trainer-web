@@ -1,7 +1,12 @@
 function Scoring(host) {
     var scoring = this;
     scoring.ws = new WebSocket('ws://' + host);
-    console.log(host);
+
+    scoring.ws.onopen = function(event) {
+        scoring.ws.send(JSON.stringify({
+            'judge': "web"
+        }));
+    }
 
     $('.body').click(function() {
         var color = $(this).parent().attr("id");
@@ -15,12 +20,13 @@ function Scoring(host) {
 
     scoring.ws.onmessage = function(event) {
         var scoringEvent = event.data;
-        console.log("scored " + scoringEvent);
+        console.log(scoringEvent);
     }
 
     scoring.send = function(event, color) {
         scoring.ws.send(JSON.stringify({
-            'scoring event': event,
+            'judge' : 'web',
+            'scored': event,
             'color' : color
         }));
     }

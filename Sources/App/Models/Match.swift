@@ -8,14 +8,21 @@
 
 import Vapor
 import Foundation
-import Random
 
-public final class Match {
+public final class Match: MatchSessionDelegate {
 
     let info = MatchInfo()
     let session = MatchSession()
 
+    init() {
+        session.delegate = self
+    }
+
     public func makeNode() throws -> Node {
-        return try Node(node: info.nodeDictionary)
+        return try info.makeNode()
+    }
+
+    func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
+        print("Confirmed \(scoringEvent)")
     }
 }

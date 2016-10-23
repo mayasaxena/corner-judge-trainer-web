@@ -8,25 +8,26 @@
 
 import Foundation
 
-public enum ScoringEvent {
-    case head
-    case body
-    case technical
-    case kyongGo
-    case gamJeom
+public struct ScoringEvent {
+    let type: ScoringEventType
+    let color: PlayerColor
+}
+
+extension ScoringEvent: Equatable {
+    public static func ==(lhs: ScoringEvent, rhs: ScoringEvent) -> Bool {
+        return lhs.type.rawValue == rhs.type.rawValue &&
+                lhs.color.rawValue == rhs.color.rawValue
+    }
+}
+
+public enum ScoringEventType: String {
+    case head = "Head"
+    case body = "Body"
+    case technical = "Technical"
+    case kyongGo = "Kyong-Go"
+    case gamJeom = "Gam-Jeom"
     
     var displayName: String {
-        switch self {
-        case .head:
-            return "Head"
-        case .body:
-            return "Body"
-        case .technical:
-            return "Technical"
-        case .kyongGo:
-            return "Kyong-Go"
-        case .gamJeom:
-            return "Gam-Jeom"
-        }
+        return rawValue
     }
 }

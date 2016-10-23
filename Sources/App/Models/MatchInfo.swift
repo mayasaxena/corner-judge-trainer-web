@@ -6,7 +6,9 @@
 //
 //
 
+import Vapor
 import Foundation
+import Random
 
 public final class MatchInfo {
 
@@ -78,7 +80,11 @@ public final class MatchInfo {
         bluePlayer.name = bluePlayerName ?? bluePlayer.name
     }
 
-    public func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent) {
+    public func updateScore(scoringEvent: ScoringEvent) {
+        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.type)
+    }
+
+    public func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEventType) {
         var playerScore = 0.0
         var otherPlayerScore = 0.0
 
@@ -127,14 +133,14 @@ public final class MatchInfo {
 
 extension MatchInfo {
 
-    var nodeDictionary: [String: AnyObject] {
-        return [
+    public func makeNode() throws -> Node {
+        return try Node(node: [
             "match-id" : matchID,
             "date" : date.timeStampString,
             "red-score" : redScore.formattedString,
             "blue-score" : blueScore.formattedString,
             "round" : round,
-        ]
+        ])
     }
 }
 

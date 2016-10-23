@@ -2,19 +2,23 @@ import Vapor
 
 let drop = Droplet()
 
-let match = MatchController(droplet: drop)
-drop.resource("match", match)
+let matchController = MatchController(droplet: drop)
+drop.resource("match", matchController)
 
-drop.get("match", Int.self, "edit", handler: match.edit)
+drop.get("match", Int.self, "edit", handler: matchController.edit)
 
 drop.socket("match", Int.self) { request, socket, id in
     socket.onText = { socket, text in
         print(text)
 
-        let json = try JSON(bytes: Array(text.utf8))
-        guard let judge = json["judge"]?.string else { return }
-        
-        try socket.send("echo text \(text)")
+        let jsonObject = try JSON(bytes: Array(text.utf8)).object
+        guard let judgeID = jsonObject?["judge"]?.string else { return }
+        matchController.addJudge(withID: judgeID, socket: socket)
+
+        if let event = jsonObject?["scored"]?.string,
+            let color = jsonObject?["color"]?.string {
+            try matchController.handle(event: event, forColor: color, fromJudgeWithID: judgeID)
+        }
     }
 }
 
