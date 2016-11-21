@@ -2,6 +2,7 @@
 
 #export("head") {
 	<title>Corner</title>
+    <link rel="stylesheet" href="/styles/match.css">
 }
 
 #export("body") {

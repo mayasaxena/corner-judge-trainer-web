@@ -9,7 +9,7 @@
 import Vapor
 import Foundation
 
-public final class Match: MatchSessionDelegate {
+public final class Match: MatchSessionDelegate, JSONRepresentable {
 
     let info = MatchInfo()
     let session = MatchSession()
@@ -22,7 +22,15 @@ public final class Match: MatchSessionDelegate {
         return try info.makeNode()
     }
 
+    // MARK: - MatchSessionDelegate
+
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
         print("Confirmed \(scoringEvent)")
+    }
+
+    // MARK: - JSONRepresentable
+
+    public func makeJSON() throws -> JSON {
+        return try info.makeJSON()
     }
 }

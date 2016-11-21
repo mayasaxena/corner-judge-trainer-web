@@ -142,6 +142,10 @@ extension MatchInfo {
             "round" : round,
         ])
     }
+
+    public func makeJSON() throws -> JSON {
+        return try JSON(makeNode())
+    }
 }
 
 // MARK: - MatchType

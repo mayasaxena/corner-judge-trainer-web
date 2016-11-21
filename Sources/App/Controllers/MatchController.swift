@@ -11,7 +11,7 @@ import HTTP
 
 public final class MatchController {
     let drop: Droplet
-    let match = Match()
+    var matches: [String : Match] = [:]
 
     public init(droplet: Droplet) {
         drop = droplet
@@ -20,26 +20,47 @@ public final class MatchController {
     // MARK: - Routes
 
     public func index(_ request: Request) throws -> ResponseRepresentable {
-        return try drop.view.make("match", match.makeNode())
+        let matchNodes = try matches.flatMap { try $0.value.makeNode() }
+        let context = ["matches" : Node.array(matchNodes)] as Node
+
+        if request.headers["Content-Type"] == "application/json" {
+            return JSON(context)
+        } else {
+            return try drop.view.make("match-list", context)
+        }
     }
 
-    public func edit(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
+    public func create(request: Request) throws -> ResponseRepresentable {
+        let match = Match()
+        matches[match.info.matchID] = match
+        return Response(redirect: "show")
+    }
+
+    public func edit(_ request: Request, _ id: String) throws -> ResponseRepresentable {
         return try drop.view.make("edit-match", Node(node: ["id" : id]))
     }
 
+    public func show(_ request: Request, _ id: String) throws -> ResponseRepresentable {
+        guard let match = matches[id] else { throw Abort.notFound }
+        return try drop.view.make("match", match.makeNode())
+    }
+
     public func addJudge(withID id: String, socket: WebSocket) {
-        match.session.connections[id] = socket
+//        match.session.connections[id] = socket
     }
 
     public func handle(event: String, forColor color: String, fromJudgeWithID id: String) throws {
-        try match.session.received(event: event, forColor: color, fromJudgeWithID: id)
+//        try match.session.received(event: event, forColor: color, fromJudgeWithID: id)
     }
 }
 
 extension MatchController: ResourceRepresentable {
     public func makeResource() -> Resource<String> {
         return Resource(
-            index: index
+            index: index,
+            store: create,
+            show: show,
+            modify: edit
         )
     }
 }

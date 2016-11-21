@@ -2,6 +2,7 @@
 
 #export("head") {
 	<title>Edit Match #(id)</title>
+    <link rel="stylesheet" href="/styles/edit-match.css">
 	<script type="text/javascript" src="/scripts/score.js"></script>
 }
 

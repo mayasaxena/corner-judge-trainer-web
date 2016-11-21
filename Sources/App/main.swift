@@ -2,10 +2,14 @@ import Vapor
 
 let drop = Droplet()
 
+drop.get { request in
+    return try drop.view.make("home")
+}
+
 let matchController = MatchController(droplet: drop)
 drop.resource("match", matchController)
 
-drop.get("match", Int.self, "edit", handler: matchController.edit)
+//drop.get("match", Int.self, "edit", handler: matchController.edit)
 
 drop.socket("match", Int.self) { request, socket, id in
     socket.onText = { socket, text in

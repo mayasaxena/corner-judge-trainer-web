@@ -2,6 +2,7 @@
 	box-sizing: border-box;
 	font-family: 'Droid Sans', sans-serif;
 	font-weight: bold;
+    background-color: #272727
 }
 
 body, html {
@@ -16,145 +17,31 @@ body {
 	overflow: hidden;
 }
 
-/* SCORING */
-
-.header {
-	width: 100%;
-	display: flex;
-	flex-flow: column;
-	align-items: center;
-	justify-content: center;
-	position: absolute;
-	top: 0;
+.button {
+    border-radius: 7px;
+    text-align: center;
+    padding: 0.5em;
+    height: 3em;
+    line-height: 2em;
 }
 
-.header * {
-	background-color: rgba(39, 39, 39, 0.9);
+.medium.button {
+    width: 10em;
 }
 
-.top-bar {
-	height: 3em;
-	width: inherit;
+.large.button {
+    width: 15em;
 }
 
-.match-info {
-	height: 14em;
-	width: 19em;
-	display: block;
-	position: relative;
-	margin: auto;
-	text-align: center;
+.red.button {
+    background-color: #ba4242;
 }
 
-.match-info * {
-	background-color: rgba(39, 39, 39, 0.0);
+.blue.button {
+    background-color: #366cac;
 }
 
-.round {
-	font-size: 4em;
-}
-
-.time {
-	font-size: 7em;
-}
-
-.scoring {
-	height: 100%;
-}
-
-.scoring .red, .scoring .blue {
-	margin: 0;
-	width: 50%;
-	float: left;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.scoring .red {
-	background-color: #ba4242;
-}
-
-.scoring .blue {
-	background-color: #366cac;
-}
-
-.score {
-	font-family: Verdana;
-	color: white;
-	font-size: 22em;
-	text-align: center;
-	vertical-align: middle;
-}
-
-.penalties {
-	position: absolute;
-	bottom: 0;
-	background-color: rgba(39, 39, 39, 0.9);
-	height: 4em;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-around;
-}
-
-#red-penalty, #blue-penalty {
-	display: flex;
-	justify-content: space-around;
-}
-
-#red-penalty {
-	flex-flow: row;
-}
-
-#blue-penalty {
-	flex-flow: row-reverse;
-}
-
-.penalty {
-	width: 2.5em;
-	height: 2.5em;
-	border-radius: 1.25em;
-	flex-shrink: 0;
-	margin: 0 1em;
-}
-
-.kyong-go.penalty {
-	background-color: #FFD046;
-}
-
-.gam-jeom.penalty {
-	background-color: #960200;
-}
-
-/* EDIT */
-
-.editing {
-	display: flex;
-	flex-flow: row;
-}
-
-.buttons {
-	display: flex;
-	flex-flow: column;
-	align-items: center;
-	flex: 1;
-}
-
-.buttons * {
-	width: 10em;
-	height: 3em;
-	border-radius: 7px;
-	margin-bottom: 2em;
-	text-align: center;
-	line-height: 3em;
-}
-
-#red * {
-	background-color: #ba4242;
-}
-
-#blue * {
-	background-color: #366cac;
+.white.button {
+    background-color: #f5f5f5;
+    color: #272727;
 }
