@@ -1,5 +1,8 @@
 import Vapor
 
+let DEBUG = false
+let MOCKING = true
+
 let drop = Droplet()
 
 drop.get { request in
@@ -7,9 +10,10 @@ drop.get { request in
 }
 
 let matchController = MatchController(droplet: drop)
-drop.resource("match", matchController)
 
-//drop.get("match", Int.self, "edit", handler: matchController.edit)
+drop.get(handler: matchController.index)
+
+drop.resource("match", matchController)
 
 drop.socket("match", Int.self) { request, socket, id in
     socket.onText = { socket, text in

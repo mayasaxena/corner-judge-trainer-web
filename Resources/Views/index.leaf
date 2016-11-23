@@ -1,0 +1,12 @@
+#extend("base")
+
+#export("head") {
+	<title>Corner</title>
+}
+
+#export("body") {
+
+	#loop(matches, "match") {
+		<h1>#(match.red-player) vs #(match.blue-player)</h1>
+	}
+}

@@ -20,19 +20,23 @@ public final class MatchController {
     // MARK: - Routes
 
     public func index(_ request: Request) throws -> ResponseRepresentable {
-        let matchNodes = try matches.flatMap { try $0.value.makeNode() }
+        if MOCKING {
+            populateMatches()
+        }
+
+        let matchNodes = try matches.map { try $0.value.makeNode() }
         let context = ["matches" : Node.array(matchNodes)] as Node
 
         if request.headers["Content-Type"] == "application/json" {
             return JSON(context)
         } else {
-            return try drop.view.make("match-list", context)
+            return try drop.view.make("index", context)
         }
     }
 
     public func create(request: Request) throws -> ResponseRepresentable {
         let match = Match()
-        matches[match.info.matchID] = match
+        matches[match.properties.matchID] = match
         return Response(redirect: "show")
     }
 
@@ -51,6 +55,23 @@ public final class MatchController {
 
     public func handle(event: String, forColor color: String, fromJudgeWithID id: String) throws {
 //        try match.session.received(event: event, forColor: color, fromJudgeWithID: id)
+    }
+
+    private func populateMatches() {
+        matches = [:]
+
+        let playerNames: [(String, String)] = [
+            ("Kira Tomlinson", "Eliza Schreibman"),
+            ("Pulkit Jain", "Jaydev Dave"),
+            ("Yennie Jun", "Julia Richieri"),
+            ("Margot Day", "Jennifer Sohn")
+        ]
+
+        for (red, blue) in playerNames {
+            let match = Match()
+            match.properties.add(redPlayerName: red, bluePlayerName: blue)
+            matches[match.properties.matchID] = match
+        }
     }
 }
 
