@@ -137,9 +137,9 @@ extension MatchProperties {
         return try Node(node: [
             "match-id" : matchID,
             "date" : date.timeStampString,
-            "red-player" : redPlayer.displayName,
+            "red-player" : redPlayer.displayName.uppercased(),
             "red-score" : redScore.formattedString,
-            "blue-player" : bluePlayer.displayName,
+            "blue-player" : bluePlayer.displayName.uppercased(),
             "blue-score" : blueScore.formattedString,
             "round" : round,
         ])

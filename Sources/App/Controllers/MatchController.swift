@@ -25,7 +25,10 @@ public final class MatchController {
         }
 
         let matchNodes = try matches.map { try $0.value.makeNode() }
-        let context = ["matches" : Node.array(matchNodes)] as Node
+        let context = [
+            "matches" : Node.array(matchNodes),
+            "match-count" : Node(matchNodes.count)
+        ] as Node
 
         if request.headers["Content-Type"] == "application/json" {
             return JSON(context)

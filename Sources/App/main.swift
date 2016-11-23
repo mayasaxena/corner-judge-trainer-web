@@ -1,12 +1,13 @@
 import Vapor
+import Leaf
 
 let DEBUG = false
 let MOCKING = true
 
 let drop = Droplet()
 
-drop.get { request in
-    return try drop.view.make("home")
+if let leaf = drop.view as? LeafRenderer {
+    leaf.stem.register(GreaterThan())
 }
 
 let matchController = MatchController(droplet: drop)
