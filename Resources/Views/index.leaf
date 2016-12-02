@@ -34,7 +34,7 @@
 							#(match.red-player)
 						</div>
 						<div class="transparent button">
-							JOIN
+							<a href="/match/#(match.match-id)">JOIN</a>
 						</div>
 						<div class="right name">
 							#(match.blue-player)

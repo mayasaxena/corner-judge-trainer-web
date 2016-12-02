@@ -17,6 +17,7 @@ public final class MatchSession {
     struct Constants {
         static let ConfirmationInterval = 1.0
     }
+
     var connections: [String: WebSocket] = [:]
 
     var scoringTimer: Timer?
@@ -58,11 +59,4 @@ public final class MatchSession {
             print("Event not confirmed")
         }
     }
-}
-
-public func After(_ after: TimeInterval, on queue: DispatchQueue = DispatchQueue.main, op: @escaping () -> ()) {
-    let seconds = Int64(after * Double(NSEC_PER_SEC))
-    let dispatchTime = DispatchTime.now() + Double(seconds) / Double(NSEC_PER_SEC)
-
-    queue.asyncAfter(deadline: dispatchTime, execute: op)
 }

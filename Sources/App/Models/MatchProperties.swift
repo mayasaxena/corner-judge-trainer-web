@@ -28,7 +28,8 @@ public final class MatchProperties {
 
     var winningPlayer: Player?
 
-    var matchID: String
+    var id: Int
+
     var date: Date
 
     var matchType: MatchType
@@ -67,7 +68,7 @@ public final class MatchProperties {
         self.redPlayer = redPlayer
         self.bluePlayer = bluePlayer
 
-        self.matchID = String.random(Constants.MatchIDLength)
+        self.id = Int.random(3)
         self.date = Date()
         self.redScore = 0
         self.blueScore = 0
@@ -135,7 +136,7 @@ extension MatchProperties {
 
     public func makeNode() throws -> Node {
         return try Node(node: [
-            "match-id" : matchID,
+            "match-id" : id,
             "date" : date.timeStampString,
             "red-player" : redPlayer.displayName.uppercased(),
             "red-score" : redScore.formattedString,
@@ -217,19 +218,10 @@ public enum MatchType: Int {
     }
 }
 
-extension String {
+extension Int {
 
-    static func random(_ length: Int = 20) -> String {
-
-        let base = "0123456789"
-        var randomString: String = ""
-
-        for _ in 0..<length {
-            let randomValue = URandom.uint % UInt(base.characters.count)
-            randomString += "\(base[base.characters.index(base.startIndex, offsetBy: Int(randomValue))])"
-        }
-
-        return randomString
+    static func random(_ length: Int = 3) -> Int {
+        return random(min: 10^^(length - 1), max: (10^^length) - 1)
     }
 }
 
@@ -241,3 +233,10 @@ extension Date {
         return formatter.string(from: self)
     }
 }
+
+precedencegroup PowerPrecedence { higherThan: MultiplicationPrecedence }
+infix operator ^^ : PowerPrecedence
+func ^^ (radix: Int, power: Int) -> Int {
+    return Int(pow(Double(radix), Double(power)))
+}
+

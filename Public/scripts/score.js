@@ -8,15 +8,40 @@ function Scoring(host) {
         }));
     }
 
-    $('.body').click(function() {
-        var color = $(this).parent().attr("id");
-        scoring.send("Body", color);
-    });
+    document.onkeypress = function(event) {
+        event = event || window.event;
+        var charCode = event.keyCode || event.which;
+        var charString = String.fromCharCode(charCode);
+        switch (charString) {
+            // RED
+            case 'f':
+                scoring.send("body", "red");
+                break;
+            case 'f':
+                scoring.send("head", "red");
+                break;
+            case 'v':
+                scoring.send("technical", "red");
+                break;
 
-    $('.head').click(function() {
-        var color = $(this).parent().attr("id");
-        scoring.send("Head", color);
-    });
+            // BLUE
+            case 'j':
+                scoring.send("body", "blue");
+                break;
+            case 'n':
+                scoring.send("head", "blue");
+                break;
+            case 'h':
+                scoring.send("technical", "blue");
+                break;
+
+            case ' ':
+                console.log("pause")
+                break;
+            default:
+                break;
+        }
+    };
 
     scoring.ws.onmessage = function(event) {
         var scoringEvent = event.data;

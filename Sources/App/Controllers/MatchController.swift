@@ -11,7 +11,7 @@ import HTTP
 
 public final class MatchController {
     let drop: Droplet
-    var matches: [String : Match] = [:]
+    var matches: [Int : Match] = [:]
 
     public init(droplet: Droplet) {
         drop = droplet
@@ -39,25 +39,27 @@ public final class MatchController {
 
     public func create(request: Request) throws -> ResponseRepresentable {
         let match = Match()
-        matches[match.properties.matchID] = match
+        matches[match.properties.id] = match
         return Response(redirect: "show")
     }
 
-    public func edit(_ request: Request, _ id: String) throws -> ResponseRepresentable {
+    public func edit(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
         return try drop.view.make("edit-match", Node(node: ["id" : id]))
     }
 
-    public func show(_ request: Request, _ id: String) throws -> ResponseRepresentable {
+    public func show(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
         guard let match = matches[id] else { throw Abort.notFound }
         return try drop.view.make("match", match.makeNode())
     }
 
-    public func addJudge(withID id: String, socket: WebSocket) {
-//        match.session.connections[id] = socket
+    public func addConnection(socket: WebSocket, forJudgeID judgeID: String, toMatchID matchID: Int) throws {
+        guard let match = matches[matchID] else { throw Abort.notFound }
+        match.session.connections[judgeID] = socket
     }
 
-    public func handle(event: String, forColor color: String, fromJudgeWithID id: String) throws {
-//        try match.session.received(event: event, forColor: color, fromJudgeWithID: id)
+    public func handle(event: String, forColor color: String, fromJudgeID judgeID: String, forMatchID matchID: Int) throws {
+        guard let match = matches[matchID] else { throw Abort.notFound }
+        try match.session.received(event: event, forColor: color, fromJudgeWithID: judgeID)
     }
 
     private func populateMatches() {
@@ -73,13 +75,13 @@ public final class MatchController {
         for (red, blue) in playerNames {
             let match = Match()
             match.properties.add(redPlayerName: red, bluePlayerName: blue)
-            matches[match.properties.matchID] = match
+            matches[match.properties.id] = match
         }
     }
 }
 
 extension MatchController: ResourceRepresentable {
-    public func makeResource() -> Resource<String> {
+    public func makeResource() -> Resource<Int> {
         return Resource(
             index: index,
             store: create,

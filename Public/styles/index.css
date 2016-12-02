@@ -84,6 +84,13 @@ html, body {
 
 .transparent.button * {
     flex: 1 1 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.transparent.button:active {
+    color: #CBC9C9;
+    border-color: #CBC9C9;
 }
 
 .left {

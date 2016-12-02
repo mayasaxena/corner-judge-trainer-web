@@ -3,11 +3,12 @@
 #export("head") {
 	<title>Corner</title>
     <link rel="stylesheet" href="/styles/match.css">
+	<script type="text/javascript" src="/scripts/score.js"></script>
+
 }
 
 #export("body") {
 	<div class="header">
-		<div class="top-bar"></div>
 		<div class="match-info">
 			<div class="round">R#(round)</div>
 			<div class="time">0:00</div>
@@ -39,4 +40,11 @@
 			</div>
 		</div>
 	</div>
+
+	<script type="text/javascript">
+		var regex = /match\/(.*?)\//
+		var index = #(match-id)
+		console.log(index)
+		var scoring = Scoring(window.location.host + "/match-ws/" + index)
+	</script>
 }
