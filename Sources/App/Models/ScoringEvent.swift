@@ -7,10 +7,27 @@
 //
 
 import Foundation
+import Vapor
 
 public struct ScoringEvent {
     let type: ScoringEventType
     let color: PlayerColor
+
+    var jsonString: String {
+        if let jsonData = try? JSONSerialization.data(withJSONObject: dictionary, options: []),
+            let string = String(data: jsonData, encoding: .utf8) {
+            return string
+        } else {
+            return "fail"
+        }
+    }
+
+    var dictionary: [String: String] {
+        return [
+            "type" : type.displayName,
+            "color" : color.displayName
+        ]
+    }
 }
 
 extension ScoringEvent: Equatable {

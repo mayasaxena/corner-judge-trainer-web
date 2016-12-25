@@ -86,6 +86,8 @@ public final class MatchProperties {
     }
 
     public func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEventType) {
+        guard winningPlayer == nil else { return }
+
         var playerScore = 0.0
         var otherPlayerScore = 0.0
 
@@ -143,6 +145,8 @@ extension MatchProperties {
             "blue-player" : bluePlayer.displayName.uppercased(),
             "blue-score" : blueScore.formattedString,
             "round" : round,
+            "blue-win" : winningPlayer?.color == .blue ? "blink" : "",
+            "red-win" : winningPlayer?.color == .red ? "blink" : "",
         ])
     }
 

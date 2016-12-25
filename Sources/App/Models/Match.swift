@@ -25,7 +25,7 @@ public final class Match: MatchSessionDelegate, JSONRepresentable {
     // MARK: - MatchSessionDelegate
 
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
-        print("Confirmed \(scoringEvent)")
+        properties.updateScore(scoringEvent: scoringEvent)
     }
 
     // MARK: - JSONRepresentable

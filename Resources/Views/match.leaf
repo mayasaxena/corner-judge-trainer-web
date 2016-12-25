@@ -16,11 +16,11 @@
 	</div>
 	<div class="scoring">
 	    <div class="red">
-	        <div class="score">#(red-score)</div>
+	        <div class="score #(red-win)">#(red-score)</div>
 	    </div>
 
 	    <div class="blue">
-	        <div class="score">#(blue-score)</div>
+	        <div class="score #(blue-win)">#(blue-score)</div>
 	    </div>
 		<div class="penalties">
 			<div id="red-penalty">

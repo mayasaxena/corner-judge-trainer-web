@@ -100,3 +100,14 @@
 .gam-jeom.penalty {
     background-color: #960200;
 }
+
+.blink {
+    color: #9EF83C !important;
+    animation: blinker steps(1) 1500ms infinite;
+}
+
+@keyframes blinker {
+    0% { visibility: visible; }
+    50% { visibility: hidden; }
+    100% { visibility: visible; }
+}

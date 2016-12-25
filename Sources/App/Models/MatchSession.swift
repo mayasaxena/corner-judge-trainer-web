@@ -53,8 +53,9 @@ public final class MatchSession {
         if confirmationInfo.count >= Int(ceil(Double(connections.count / 2))) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
             for (_, socket) in connections {
-                try socket.send("scored \(confirmationInfo.event)")
+                try socket.send("confirmed \(confirmationInfo.event.jsonString)")
             }
+            eventConfirmationInfo = nil
         } else {
             print("Event not confirmed")
         }

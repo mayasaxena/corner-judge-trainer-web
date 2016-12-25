@@ -17,10 +17,10 @@ function Scoring(host) {
             case 'f':
                 scoring.send("body", "red");
                 break;
-            case 'f':
+            case 'v':
                 scoring.send("head", "red");
                 break;
-            case 'v':
+            case 'g':
                 scoring.send("technical", "red");
                 break;
 
@@ -44,8 +44,7 @@ function Scoring(host) {
     };
 
     scoring.ws.onmessage = function(event) {
-        var scoringEvent = event.data;
-        console.log(scoringEvent);
+        $('.scoring').load(document.URL +  ' .scoring > *');
     }
 
     scoring.send = function(event, color) {
