@@ -52,16 +52,6 @@ public final class MatchController {
         return try drop.view.make("match", match.makeNode())
     }
 
-    public func addConnection(socket: WebSocket, forJudgeID judgeID: String, toMatchID matchID: Int) throws {
-        guard let match = matches[matchID] else { throw Abort.notFound }
-        match.session.connections[judgeID] = socket
-    }
-
-    public func handle(event: String, forColor color: String, fromJudgeID judgeID: String, forMatchID matchID: Int) throws {
-        guard let match = matches[matchID] else { throw Abort.notFound }
-        try match.session.received(event: event, forColor: color, fromJudgeWithID: judgeID)
-    }
-
     private func populateMatches() {
         matches = [:]
 
@@ -76,6 +66,33 @@ public final class MatchController {
             let match = Match()
             match.properties.add(redPlayerName: red, bluePlayerName: blue)
             matches[match.properties.id] = match
+        }
+    }
+
+    // MARK: - Event Handling
+
+    public func handle(_ node: Node, matchID: Int, socket: WebSocket) throws {
+        guard let match = matches[matchID] else { throw Abort.notFound }
+        let event = try createEvent(from: node)
+
+        switch event {
+        case let controlEvent as ControlEvent:
+            try match.session.received(event: controlEvent, from: socket)
+        case let scoringEvent as ScoringEvent:
+            try match.session.received(event: scoringEvent)
+        default:
+            break
+        }
+    }
+
+    func createEvent(from node: Node) throws -> Event {
+        let eventType = try EventType(value: node["event"]?.string)
+
+        switch eventType {
+        case .scoring:
+            return try ScoringEvent(node: node)
+        case .control:
+            return try ControlEvent(node: node)
         }
     }
 }

@@ -4,7 +4,7 @@
 	<title>Corner</title>
     <link rel="stylesheet" href="/styles/match.css">
 	<script type="text/javascript" src="/scripts/score.js"></script>
-
+	<script type="text/javascript" src="/scripts/server_events_dispatcher.js"></script>
 }
 
 #export("body") {

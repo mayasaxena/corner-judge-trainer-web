@@ -1,12 +1,14 @@
 function Scoring(host) {
     var scoring = this;
-    scoring.ws = new WebSocket('ws://' + host);
 
-    scoring.ws.onopen = function(event) {
-        scoring.ws.send(JSON.stringify({
-            'judge': "web"
-        }));
-    }
+    var url = 'ws://' + host
+    var server = new ServerEventsDispatcher(url)
+
+    server.bind("open", function() {
+        server.trigger("control", {
+            "category" : "addJudge"
+        })
+    })
 
     document.onkeypress = function(event) {
         event = event || window.event;
@@ -15,7 +17,7 @@ function Scoring(host) {
         switch (charString) {
             // RED
             case 'f':
-                scoring.send("body", "red");
+                scoring.send("body", "red")
                 break;
             case 'v':
                 scoring.send("head", "red");
@@ -36,22 +38,31 @@ function Scoring(host) {
                 break;
 
             case ' ':
-                console.log("pause")
+                scoring.pause()
                 break;
             default:
                 break;
         }
     };
 
-    scoring.ws.onmessage = function(event) {
-        $('.scoring').load(document.URL +  ' .scoring > *');
+    scoring.pause = function() {
+        server.trigger("control", {
+            "category" : "pause"
+        })
     }
 
-    scoring.send = function(event, color) {
-        scoring.ws.send(JSON.stringify({
-            'judge' : 'web',
-            'scored': event,
-            'color' : color
-        }));
+    scoring.send = function(category, color) {
+        server.trigger("scoring", {
+            "category" : category,
+            "color" : color
+        })
     }
+
+    server.bind("scoring", function(event) {
+        $('.scoring').load(document.URL +  ' .scoring > *');
+    })
+
+    server.bind("control", function(event) {
+        console.log(event)
+    })
 };

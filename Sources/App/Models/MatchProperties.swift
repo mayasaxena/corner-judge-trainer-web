@@ -12,27 +12,28 @@ import Random
 
 public final class MatchProperties {
 
-    struct Constants {
-        static let MatchIDLength = 3
-        static let MaxScore = 99.0
-        static let RestTime = 30.0
-        static let PointGapValue = 12.0
+    static let current = Match()
+
+    private struct Constants {
+        static let matchIDLength = 3
+        static let maxScore = 99.0
+        static let restTime = 30.0
+        static let pointGapValue = 12.0
     }
 
-    var restTimeInterval: TimeInterval {
-        return TimeInterval(Constants.RestTime)
-    }
+    let id = Int.random(3)
+    let date = Date()
 
-    let redPlayer: Player
-    let bluePlayer: Player
+    var redPlayer: Player
+    var bluePlayer: Player
+    let matchTimer: MatchTimer
 
     var winningPlayer: Player?
-
-    var id: Int
-
-    var date: Date
-
     var matchType: MatchType
+
+    var restTimeInterval: TimeInterval {
+        return TimeInterval(Constants.restTime)
+    }
 
     var round: Int = 1 {
         didSet {
@@ -43,18 +44,16 @@ public final class MatchProperties {
         }
     }
 
-    var redScore: Double {
+    var redScore: Double = 0 {
         didSet {
-            redScore = min(Constants.MaxScore, redScore)
+            redScore = min(Constants.maxScore, redScore)
         }
     }
-    var blueScore: Double {
+    var blueScore: Double = 0 {
         didSet {
-            blueScore = min(Constants.MaxScore, blueScore)
+            blueScore = min(Constants.maxScore, blueScore)
         }
     }
-
-    static let current = Match()
 
     convenience init() {
         self.init(redPlayer: Player(color: .red), bluePlayer: Player(color: .blue), type: .none)
@@ -68,24 +67,21 @@ public final class MatchProperties {
         self.redPlayer = redPlayer
         self.bluePlayer = bluePlayer
 
-        self.id = Int.random(3)
-        self.date = Date()
-        self.redScore = 0
-        self.blueScore = 0
-
         matchType = type
+        matchTimer = MatchTimer(duration: matchType.roundDuration)
+        matchTimer.start()
     }
 
-    public func add(redPlayerName: String?, bluePlayerName: String?) {
+    func add(redPlayerName: String?, bluePlayerName: String?) {
         redPlayer.name = redPlayerName ?? redPlayer.name
         bluePlayer.name = bluePlayerName ?? bluePlayer.name
     }
 
-    public func updateScore(scoringEvent: ScoringEvent) {
-        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.type)
+    func updateScore(scoringEvent: ScoringEvent) {
+        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.category)
     }
 
-    public func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEventType) {
+    func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
         guard winningPlayer == nil else { return }
 
         var playerScore = 0.0
@@ -123,9 +119,9 @@ public final class MatchProperties {
 
     private func checkPointGap() {
         if round > matchType.pointGapThresholdRound {
-            if redScore - blueScore >= Constants.PointGapValue {
+            if redScore - blueScore >= Constants.pointGapValue {
                 winningPlayer = redPlayer
-            } else if blueScore - redScore >= Constants.PointGapValue {
+            } else if blueScore - redScore >= Constants.pointGapValue {
                 winningPlayer = bluePlayer
             }
         }
@@ -243,4 +239,3 @@ infix operator ^^ : PowerPrecedence
 func ^^ (radix: Int, power: Int) -> Int {
     return Int(pow(Double(radix), Double(power)))
 }
-

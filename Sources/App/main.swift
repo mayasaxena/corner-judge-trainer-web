@@ -15,7 +15,7 @@ let matchController = MatchController(droplet: drop)
 drop.get(handler: matchController.index)
 drop.resource("match", matchController)
 
-drop.socket("match-ws", Int.self) { request, socket, id in
+drop.socket("match-ws", Int.self) { request, socket, matchID in
     socket.onText = { socket, text in
         print(text)
 
@@ -26,14 +26,8 @@ drop.socket("match-ws", Int.self) { request, socket, id in
             }
         }
 
-        let jsonObject = try JSON(bytes: Array(text.utf8)).object
-        guard let judgeID = jsonObject?["judge"]?.string else { return }
-        try matchController.addConnection(socket: socket, forJudgeID: judgeID, toMatchID: id)
-
-        if let event = jsonObject?["scored"]?.string,
-            let color = jsonObject?["color"]?.string {
-            try matchController.handle(event: event, forColor: color, fromJudgeID: judgeID, forMatchID: id)
-        }
+        let node = try JSON(bytes: Array(text.utf8)).node
+        try matchController.handle(node, matchID: matchID, socket: socket)
     }
 }
 

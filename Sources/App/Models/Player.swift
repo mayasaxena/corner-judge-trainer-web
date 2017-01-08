@@ -9,15 +9,14 @@
 import Foundation
 
 public enum PlayerColor: String {
-    case blue = "Blue"
-    case red = "Red"
+    case blue, red
     
     var displayName: String {
-        return rawValue
+        return rawValue.capitalized
     }
 }
 
-public class Player {
+public struct Player {
     struct Constants {
         static let DefaultName = "Anonymous"
     }
@@ -25,7 +24,7 @@ public class Player {
     var name: String
     var color: PlayerColor
     
-    convenience init(color: PlayerColor) {
+    init(color: PlayerColor) {
         self.init(color: color, name: Constants.DefaultName + " " + color.displayName)
     }
     
