@@ -8,6 +8,7 @@ let drop = Droplet()
 
 if let leaf = drop.view as? LeafRenderer {
     leaf.stem.register(GreaterThan())
+    leaf.stem.register(Repeat())
 }
 
 let matchController = MatchController(droplet: drop)

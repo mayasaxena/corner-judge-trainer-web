@@ -61,24 +61,28 @@
     vertical-align: middle;
 }
 
-.penalties {
+.penalty-background {
     position: absolute;
     bottom: 0;
     background-color: rgba(39, 39, 39, 0.9);
-    height: 4em;
+    height: 8vh;
     width: 100%;
     display: flex;
+}
+
+.penalties {
+    width: 100%;
+    height: 100%;
+    display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 #red-penalty, #blue-penalty {
     display: flex;
-    justify-content: space-around;
-}
-
-#red-penalty {
-    flex-flow: row;
+    width: 50%;
+    height: 100%;
+    justify-content: flex-start
 }
 
 #blue-penalty {
@@ -86,18 +90,25 @@
 }
 
 .penalty {
-    width: 2.5em;
-    height: 2.5em;
-    border-radius: 1.25em;
-    flex-shrink: 0;
-    margin: 0 1em;
+    width: 10%;
+    height: auto;
+    margin: auto 0;
+    border-radius: 2.5vh;
+    flex-shrink: 0.5;
 }
 
-.kyong-go.penalty {
+.kyong-go, .gam-jeom {
+    height: 5vh;
+    width: 5vh;
+    border-radius: 2.5vw;
+    margin: auto;
+}
+
+.penalty .kyong-go {
     background-color: #FFD046;
 }
 
-.gam-jeom.penalty {
+.penalty .gam-jeom {
     background-color: #960200;
 }
 

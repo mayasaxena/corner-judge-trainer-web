@@ -22,21 +22,33 @@
 	    <div class="blue">
 	        <div class="score #(blue-win)">#(blue-score)</div>
 	    </div>
-		<div class="penalties">
-			<div id="red-penalty">
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="kyong-go penalty"></div>
-			</div>
+		<div class="penalty-background">
+			<div class="penalties">
+				<div id="red-penalty">
+					#repeat(red-gamjeom-count) {
+						<div class="penalty">
+							<div class="gam-jeom"></div>
+						</div>
+					}
+					#repeat(red-kyonggo-count) {
+						<div class="penalty">
+							<div class="kyong-go"></div>
+						</div>
+					}
+				</div>
 
-			<div id="blue-penalty">
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="kyong-go penalty"></div>
-				<div class="penalty"></div>
-				<div class="penalty"></div>
+				<div id="blue-penalty">
+					#repeat(blue-gamjeom-count) {
+						<div class="penalty">
+							<div class="gam-jeom"></div>
+						</div>
+					}
+					#repeat(blue-kyonggo-count) {
+						<div class="penalty">
+							<div class="kyong-go"></div>
+						</div>
+					}
+				</div>
 			</div>
 		</div>
 	</div>

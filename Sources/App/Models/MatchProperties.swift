@@ -98,7 +98,7 @@ public final class MatchProperties {
         guard winningPlayer == nil else { return }
 
         var playerScore = 0.0
-        var otherPlayerScore = 0.0
+        var playerPenalties = 0.0
 
         switch scoringEvent {
 
@@ -113,18 +113,20 @@ public final class MatchProperties {
 
         // TODO: Fix so # of kyonggos increase instead
         case .kyongGo:
-            otherPlayerScore = 0.5
+            playerPenalties = 0.5
 
         case .gamJeom:
-            otherPlayerScore = 1
+            playerPenalties = 1
         }
 
         if playerColor == .blue {
             blueScore += playerScore
-            redScore += otherPlayerScore
+            bluePenalties += playerPenalties
+            redScore += playerPenalties
         } else {
             redScore += playerScore
-            blueScore += otherPlayerScore
+            redPenalties += playerPenalties
+            blueScore += playerPenalties
         }
 
         checkPointGap()
@@ -151,8 +153,12 @@ extension MatchProperties {
             "date" : date.timeStampString,
             "red-player" : redPlayer.displayName.uppercased(),
             "red-score" : redScore.formattedString,
+            "red-gamjeom-count": Int(redPenalties),
+            "red-kyonggo-count" : (redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
             "blue-player" : bluePlayer.displayName.uppercased(),
             "blue-score" : blueScore.formattedString,
+            "blue-gamjeom-count": Int(bluePenalties),
+            "blue-kyonggo-count" : (bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
             "round" : round,
             "blue-win" : winningPlayer?.color == .blue ? "blink" : "",
             "red-win" : winningPlayer?.color == .red ? "blink" : "",
