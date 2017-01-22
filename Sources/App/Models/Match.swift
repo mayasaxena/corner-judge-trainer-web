@@ -11,7 +11,7 @@ import Foundation
 
 public final class Match: MatchSessionDelegate, JSONRepresentable {
 
-    let info = MatchInfo()
+    let properties = MatchProperties()
     let session = MatchSession()
 
     init() {
@@ -19,18 +19,18 @@ public final class Match: MatchSessionDelegate, JSONRepresentable {
     }
 
     public func makeNode() throws -> Node {
-        return try info.makeNode()
+        return try properties.makeNode()
     }
 
     // MARK: - MatchSessionDelegate
 
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
-        print("Confirmed \(scoringEvent)")
+        properties.updateScore(scoringEvent: scoringEvent)
     }
 
     // MARK: - JSONRepresentable
 
     public func makeJSON() throws -> JSON {
-        return try info.makeJSON()
+        return try properties.makeJSON()
     }
 }

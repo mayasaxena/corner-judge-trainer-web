@@ -1,7 +1,0 @@
-.match-buttons div {
-    background-color: #366cac;
-}
-
-.match-buttons div:nth-of-type(odd) {
-    background-color: #ba4242;
-}

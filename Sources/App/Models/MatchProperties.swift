@@ -10,28 +10,30 @@ import Vapor
 import Foundation
 import Random
 
-public final class MatchInfo {
+public final class MatchProperties {
 
-    struct Constants {
-        static let MatchIDLength = 6
-        static let MaxScore = 99.0
-        static let RestTime = 30.0
-        static let PointGapValue = 12.0
+    static let current = Match()
+
+    private struct Constants {
+        static let matchIDLength = 3
+        static let maxScore = 99.0
+        static let restTime = 30.0
+        static let pointGapValue = 12.0
     }
 
-    var restTimeInterval: TimeInterval {
-        return TimeInterval(Constants.RestTime)
-    }
+    let id = Int.random(3)
+    let date = Date()
 
-    let redPlayer: Player
-    let bluePlayer: Player
+    var redPlayer: Player
+    var bluePlayer: Player
+    let matchTimer: MatchTimer
 
     var winningPlayer: Player?
-
-    var matchID: String
-    var date: Date
-
     var matchType: MatchType
+
+    var restTimeInterval: TimeInterval {
+        return TimeInterval(Constants.restTime)
+    }
 
     var round: Int = 1 {
         didSet {
@@ -42,18 +44,16 @@ public final class MatchInfo {
         }
     }
 
-    var redScore: Double {
+    var redScore: Double = 0 {
         didSet {
-            redScore = min(Constants.MaxScore, redScore)
+            redScore = min(Constants.maxScore, redScore)
         }
     }
-    var blueScore: Double {
+    var blueScore: Double = 0 {
         didSet {
-            blueScore = min(Constants.MaxScore, blueScore)
+            blueScore = min(Constants.maxScore, blueScore)
         }
     }
-
-    static let current = Match()
 
     convenience init() {
         self.init(redPlayer: Player(color: .red), bluePlayer: Player(color: .blue), type: .none)
@@ -67,24 +67,23 @@ public final class MatchInfo {
         self.redPlayer = redPlayer
         self.bluePlayer = bluePlayer
 
-        self.matchID = String.random(Constants.MatchIDLength)
-        self.date = Date()
-        self.redScore = 0
-        self.blueScore = 0
-
         matchType = type
+        matchTimer = MatchTimer(duration: matchType.roundDuration)
+        matchTimer.start()
     }
 
-    public func add(redPlayerName: String?, bluePlayerName: String?) {
+    func add(redPlayerName: String?, bluePlayerName: String?) {
         redPlayer.name = redPlayerName ?? redPlayer.name
         bluePlayer.name = bluePlayerName ?? bluePlayer.name
     }
 
-    public func updateScore(scoringEvent: ScoringEvent) {
-        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.type)
+    func updateScore(scoringEvent: ScoringEvent) {
+        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.category)
     }
 
-    public func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEventType) {
+    func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
+        guard winningPlayer == nil else { return }
+
         var playerScore = 0.0
         var otherPlayerScore = 0.0
 
@@ -120,9 +119,9 @@ public final class MatchInfo {
 
     private func checkPointGap() {
         if round > matchType.pointGapThresholdRound {
-            if redScore - blueScore >= Constants.PointGapValue {
+            if redScore - blueScore >= Constants.pointGapValue {
                 winningPlayer = redPlayer
-            } else if blueScore - redScore >= Constants.PointGapValue {
+            } else if blueScore - redScore >= Constants.pointGapValue {
                 winningPlayer = bluePlayer
             }
         }
@@ -131,15 +130,19 @@ public final class MatchInfo {
 
 // MARK: Node Conversions
 
-extension MatchInfo {
+extension MatchProperties {
 
     public func makeNode() throws -> Node {
         return try Node(node: [
-            "match-id" : matchID,
+            "match-id" : id,
             "date" : date.timeStampString,
+            "red-player" : redPlayer.displayName.uppercased(),
             "red-score" : redScore.formattedString,
+            "blue-player" : bluePlayer.displayName.uppercased(),
             "blue-score" : blueScore.formattedString,
             "round" : round,
+            "blue-win" : winningPlayer?.color == .blue ? "blink" : "",
+            "red-win" : winningPlayer?.color == .red ? "blink" : "",
         ])
     }
 
@@ -215,19 +218,10 @@ public enum MatchType: Int {
     }
 }
 
-extension String {
+extension Int {
 
-    static func random(_ length: Int = 20) -> String {
-
-        let base = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-        var randomString: String = ""
-
-        for _ in 0..<length {
-            let randomValue = URandom.uint % UInt(base.characters.count)
-            randomString += "\(base[base.characters.index(base.startIndex, offsetBy: Int(randomValue))])"
-        }
-
-        return randomString
+    static func random(_ length: Int = 3) -> Int {
+        return random(min: 10^^(length - 1), max: (10^^length) - 1)
     }
 }
 
@@ -238,4 +232,10 @@ extension Date {
         formatter.timeZone = TimeZone.current
         return formatter.string(from: self)
     }
+}
+
+precedencegroup PowerPrecedence { higherThan: MultiplicationPrecedence }
+infix operator ^^ : PowerPrecedence
+func ^^ (radix: Int, power: Int) -> Int {
+    return Int(pow(Double(radix), Double(power)))
 }

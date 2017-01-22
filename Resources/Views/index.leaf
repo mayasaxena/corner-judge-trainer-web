@@ -1,0 +1,56 @@
+#extend("base")
+
+#export("head") {
+	<title>Corner</title>
+	<link rel="stylesheet" href="/styles/index.css">
+
+}
+
+#export("body") {
+
+	<div class="header row">
+		<div class="join-match title">
+			JOIN A MATCH
+		</div>
+		<div class="create-match large blue button">
+			CREATE A MATCH
+		</div>
+	</div>
+	#greaterThan(match-count, "0") {
+		#loop(matches, "match") {
+			<div class="row">
+				<div class="match">
+					<div class="content">
+						<div class="match-label">MATCH</div>
+						<div class="match-number">#(match.match-id)</div>
+					</div>
+				</div>
+				<div class="join col">
+					<div class="content">
+						<div class="hogu icon">
+							<img src="/images/icons/hoguIconRed.png" alt="Icon of a red hogu">
+						</div>
+						<div class="left name">
+							#(match.red-player)
+						</div>
+						<div class="transparent button">
+							<a href="/match/#(match.match-id)">JOIN</a>
+						</div>
+						<div class="right name">
+							#(match.blue-player)
+						</div>
+						<div class="hogu icon">
+							<img src="/images/icons/hoguIconBlue.png" alt="Icon of a blue hogu">
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	} ##else() {
+		<div class="join row no-matches">
+			<div class="content">
+				No matches available
+			</div>
+		</div>
+	}
+}

@@ -3,7 +3,7 @@
 #export("head") {
 	<title>Edit Match #(id)</title>
     <link rel="stylesheet" href="/styles/edit-match.css">
-	<script type="text/javascript" src="/scripts/score.js"></script>
+	<script type="text/javascript" src="/scripts/edit-match.js"></script>
 }
 
 #export("body") {
@@ -27,6 +27,6 @@
     <script type="text/javascript">
 		var regex = /match\/(.*?)\//
 		var index = regex.exec(window.location.pathname).pop();
-		var scoring = Scoring(window.location.host + "/match/" + index)
+		edit-match(window.location.host + "/match-ws/" + index)
 	</script>
 }

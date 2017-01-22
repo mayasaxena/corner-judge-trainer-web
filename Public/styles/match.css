@@ -7,37 +7,27 @@
     align-items: center;
     justify-content: center;
     position: absolute;
-    top: 0;
 }
 
 .header * {
-    background-color: rgba(39, 39, 39, 0.9);
-}
-
-.top-bar {
-    height: 3em;
-    width: inherit;
+    background-color: #272727;
 }
 
 .match-info {
-    height: 14em;
-    width: 19em;
+    width: 15vw;
     display: block;
     position: relative;
     margin: auto;
     text-align: center;
 }
 
-.match-info * {
-    background-color: rgba(39, 39, 39, 0.0);
-}
-
 .round {
-    font-size: 4em;
+    font-size: 3vw;
 }
 
 .time {
-    font-size: 7em;
+    font-size: 5vw;
+    margin-bottom: 1vw;
 }
 
 .scoring {
@@ -64,8 +54,9 @@
 
 .score {
     font-family: Verdana;
+    font-weight: bold;
     color: white;
-    font-size: 22em;
+    font-size: 22vw;
     text-align: center;
     vertical-align: middle;
 }
@@ -108,4 +99,15 @@
 
 .gam-jeom.penalty {
     background-color: #960200;
+}
+
+.blink {
+    color: #9EF83C !important;
+    animation: blinker steps(1) 1500ms infinite;
+}
+
+@keyframes blinker {
+    0% { visibility: visible; }
+    50% { visibility: hidden; }
+    100% { visibility: visible; }
 }
