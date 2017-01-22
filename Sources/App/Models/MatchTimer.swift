@@ -30,7 +30,6 @@ final class MatchTimer {
             if welf.timeRemaining <= 0 {
                 welf.stop()
             }
-            print("remaining: \(welf.timeRemaining)")
 //            welf.handler()
         }
 

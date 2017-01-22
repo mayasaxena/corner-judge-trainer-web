@@ -146,3 +146,16 @@ struct ControlEvent: Event {
         ])
     }
 }
+
+extension Node {
+    func createEvent() throws -> Event {
+        let eventType = try EventType(value: self["event"]?.string)
+
+        switch eventType {
+        case .scoring:
+            return try ScoringEvent(node: node)
+        case .control:
+            return try ControlEvent(node: node)
+        }
+    }
+}

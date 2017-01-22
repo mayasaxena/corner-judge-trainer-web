@@ -25,7 +25,18 @@ public final class MatchSession {
 
     weak var delegate: MatchSessionDelegate?
 
-    func received(event: ScoringEvent) throws {
+    func received(event: Event, from socket: WebSocket) throws {
+        switch event {
+        case let controlEvent as ControlEvent:
+            try received(event: controlEvent, from: socket)
+        case let scoringEvent as ScoringEvent:
+            try received(event: scoringEvent)
+        default:
+            break
+        }
+    }
+
+    private func received(event: ScoringEvent) throws {
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
                 receivedEventInfo?.count += 1
@@ -39,7 +50,7 @@ public final class MatchSession {
         }
     }
 
-    func received(event: ControlEvent, from socket: WebSocket) throws {
+    private func received(event: ControlEvent, from socket: WebSocket) throws {
         if event.category == .addJudge {
             try addConnection(to: socket, forJudgeID: event.judgeID)
         }

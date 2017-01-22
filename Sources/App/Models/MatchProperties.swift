@@ -22,20 +22,20 @@ public final class MatchProperties {
     }
 
     let id = Int.random(3)
-    let date = Date()
+    fileprivate let date = Date()
 
-    var redPlayer: Player
-    var bluePlayer: Player
-    let matchTimer: MatchTimer
+    fileprivate var redPlayer: Player
+    fileprivate var bluePlayer: Player
+    private let matchTimer: MatchTimer
 
-    var winningPlayer: Player?
-    var matchType: MatchType
+    fileprivate var winningPlayer: Player?
+    private var matchType: MatchType
 
-    var restTimeInterval: TimeInterval {
+    private var restTimeInterval: TimeInterval {
         return TimeInterval(Constants.restTime)
     }
 
-    var round: Int = 1 {
+    fileprivate var round: Int = 1 {
         didSet {
             round = min(round, matchType.roundCount)
             if round == matchType.roundCount {
@@ -44,14 +44,27 @@ public final class MatchProperties {
         }
     }
 
-    var redScore: Double = 0 {
+    fileprivate var redScore: Double = 0 {
         didSet {
             redScore = min(Constants.maxScore, redScore)
         }
     }
-    var blueScore: Double = 0 {
+
+    fileprivate var redPenalties: Double = 0 {
+        didSet {
+            print("Red penalties: \(redPenalties)")
+        }
+    }
+
+    fileprivate var blueScore: Double = 0 {
         didSet {
             blueScore = min(Constants.maxScore, blueScore)
+        }
+    }
+
+    fileprivate var bluePenalties: Double = 0 {
+        didSet {
+            print("Red penalties: \(redPenalties)")
         }
     }
 
@@ -81,7 +94,7 @@ public final class MatchProperties {
         updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.category)
     }
 
-    func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
+    private func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
         guard winningPlayer == nil else { return }
 
         var playerScore = 0.0
