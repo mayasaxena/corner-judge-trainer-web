@@ -112,7 +112,7 @@ extension ScoringEvent: Equatable {
 
 struct ControlEvent: Event {
     enum Category: String {
-        case play, pause, addJudge
+        case playPause, addJudge, timer
     }
 
     let eventType: EventType = .control
@@ -130,12 +130,16 @@ struct ControlEvent: Event {
         try self.init(category: categoryRaw, judgeID: judgeID)
     }
 
+    init(category: Category, judgeID: String) {
+        self.category = category
+        self.judgeID = judgeID
+    }
+
     init(category: String, judgeID: String) throws {
         guard let category = ControlEvent.Category(rawValue: category) else {
-                throw Abort.badRequest
+            throw Abort.badRequest
         }
-        self.judgeID = judgeID
-        self.category = category
+        self.init(category: category, judgeID: judgeID)
     }
 
     func makeNode(context: Context) throws -> Node {

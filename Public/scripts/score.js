@@ -4,11 +4,7 @@ function Scoring(host) {
     var url = 'ws://' + host
     var server = new ServerEventsDispatcher(url)
 
-    server.bind("open", function() {
-        server.trigger("control", {
-            "category" : "addJudge"
-        })
-    })
+    // TRIGGERS
 
     document.onkeypress = function(event) {
         event = event || window.event;
@@ -38,16 +34,16 @@ function Scoring(host) {
                 break;
 
             case ' ':
-                scoring.pause()
+                scoring.playPause()
                 break;
             default:
                 break;
         }
     };
 
-    scoring.pause = function() {
+    scoring.playPause = function() {
         server.trigger("control", {
-            "category" : "pause"
+            "category" : "playPause"
         })
     }
 
@@ -58,11 +54,20 @@ function Scoring(host) {
         })
     }
 
+    // BINDINGS
+
+    server.bind("open", function() {
+        server.trigger("control", {
+            "category" : "addJudge"
+        })
+    })
+
     server.bind("scoring", function(event) {
         $('.scoring').load(document.URL +  ' .scoring > *');
     })
 
     server.bind("control", function(event) {
         console.log(event)
+        $(".match-info").load(document.URL + " .match-info > *")
     })
 };

@@ -26,10 +26,9 @@ public final class MatchProperties {
 
     fileprivate var redPlayer: Player
     fileprivate var bluePlayer: Player
-    private let matchTimer: MatchTimer
 
     fileprivate var winningPlayer: Player?
-    private var matchType: MatchType
+    var matchType: MatchType
 
     private var restTimeInterval: TimeInterval {
         return TimeInterval(Constants.restTime)
@@ -64,7 +63,7 @@ public final class MatchProperties {
 
     fileprivate var bluePenalties: Double = 0 {
         didSet {
-            print("Red penalties: \(redPenalties)")
+            print("Blue penalties: \(redPenalties)")
         }
     }
 
@@ -81,8 +80,6 @@ public final class MatchProperties {
         self.bluePlayer = bluePlayer
 
         matchType = type
-        matchTimer = MatchTimer(duration: matchType.roundDuration)
-        matchTimer.start()
     }
 
     func add(redPlayerName: String?, bluePlayerName: String?) {
@@ -141,6 +138,26 @@ public final class MatchProperties {
             }
         }
     }
+
+    lazy public var nodeLiteral: [String : NodeRepresentable] = { [weak self] in
+        guard let welf = self else { return [:] }
+
+        return [
+            "match-id" : welf.id,
+            "date" : welf.date.timeStampString,
+            "red-player" : welf.redPlayer.displayName.uppercased(),
+            "red-score" : welf.redScore.formattedString,
+            "red-gamjeom-count": Int(welf.redPenalties),
+            "red-kyonggo-count" : (welf.redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            "blue-player" : welf.bluePlayer.displayName.uppercased(),
+            "blue-score" : welf.blueScore.formattedString,
+            "blue-gamjeom-count": Int(welf.bluePenalties),
+            "blue-kyonggo-count" : (welf.bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            "round" : welf.round,
+            "blue-win" : welf.winningPlayer?.color == .blue ? "blink" : "",
+            "red-win" : welf.winningPlayer?.color == .red ? "blink" : "",
+        ]
+    }()
 }
 
 // MARK: Node Conversions
@@ -148,21 +165,7 @@ public final class MatchProperties {
 extension MatchProperties {
 
     public func makeNode() throws -> Node {
-        return try Node(node: [
-            "match-id" : id,
-            "date" : date.timeStampString,
-            "red-player" : redPlayer.displayName.uppercased(),
-            "red-score" : redScore.formattedString,
-            "red-gamjeom-count": Int(redPenalties),
-            "red-kyonggo-count" : (redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
-            "blue-player" : bluePlayer.displayName.uppercased(),
-            "blue-score" : blueScore.formattedString,
-            "blue-gamjeom-count": Int(bluePenalties),
-            "blue-kyonggo-count" : (bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
-            "round" : round,
-            "blue-win" : winningPlayer?.color == .blue ? "blink" : "",
-            "red-win" : winningPlayer?.color == .red ? "blink" : "",
-        ])
+        return try Node(node: nodeLiteral)
     }
 
     public func makeJSON() throws -> JSON {

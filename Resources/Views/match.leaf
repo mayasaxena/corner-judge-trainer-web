@@ -11,7 +11,7 @@
 	<div class="header">
 		<div class="match-info">
 			<div class="round">R#(round)</div>
-			<div class="time">0:00</div>
+			<div class="time">#(time)</div>
 		</div>
 	</div>
 	<div class="scoring">

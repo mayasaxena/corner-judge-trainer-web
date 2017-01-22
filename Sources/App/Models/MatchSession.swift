@@ -14,29 +14,17 @@ protocol MatchSessionDelegate: class {
 }
 
 public final class MatchSession {
-    struct Constants {
+    private struct Constants {
         static let ConfirmationInterval = 1.0
     }
 
-    var connections: [String: WebSocket] = [:]
+    private var connections: [String: WebSocket] = [:]
 
-    var scoringTimer: Timer?
-    var receivedEventInfo: (event: ScoringEvent, count: Int)?
+    private var receivedEventInfo: (event: ScoringEvent, count: Int)?
 
     weak var delegate: MatchSessionDelegate?
 
-    func received(event: Event, from socket: WebSocket) throws {
-        switch event {
-        case let controlEvent as ControlEvent:
-            try received(event: controlEvent, from: socket)
-        case let scoringEvent as ScoringEvent:
-            try received(event: scoringEvent)
-        default:
-            break
-        }
-    }
-
-    private func received(event: ScoringEvent) throws {
+    func received(event: ScoringEvent) throws {
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
                 receivedEventInfo?.count += 1
@@ -50,27 +38,25 @@ public final class MatchSession {
         }
     }
 
-    private func received(event: ControlEvent, from socket: WebSocket) throws {
-        if event.category == .addJudge {
-            try addConnection(to: socket, forJudgeID: event.judgeID)
-        }
-    }
-
     func addConnection(to socket: WebSocket, forJudgeID judgeID: String) throws {
         connections[judgeID] = socket
     }
 
-    dynamic public func confirmScoringEvent() throws {
+    dynamic private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
         if confirmationInfo.count >= Int(ceil(Double(connections.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
-            for (_, socket) in connections {
-                guard let jsonString = confirmationInfo.event.jsonString else { throw Abort.notFound }
-                try socket.send(jsonString)
-            }
+            guard let eventString = confirmationInfo.event.jsonString else { throw Abort.notFound }
+            try send(jsonString: eventString)
         } else {
             print("Event not confirmed")
         }
         receivedEventInfo = nil
+    }
+
+    func send(jsonString: String) throws {
+        for (_, socket) in connections {
+            try socket.send(jsonString)
+        }
     }
 }
