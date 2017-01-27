@@ -42,7 +42,7 @@ public final class MatchSession {
         connections[judgeID] = socket
     }
 
-    dynamic private func confirmScoringEvent() throws {
+    private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
         if confirmationInfo.count >= Int(ceil(Double(connections.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)

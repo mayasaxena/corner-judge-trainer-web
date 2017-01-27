@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Dispatch
 
 final class MatchTimer {
     private var timer: DispatchSourceTimer?
