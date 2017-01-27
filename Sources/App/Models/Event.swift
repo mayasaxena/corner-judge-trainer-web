@@ -47,9 +47,7 @@ fileprivate struct JSONKey {
     static let eventType = "event"
     static let judgeID = "sent_by"
     static let data = "data"
-
     static let category = "category"
-
     static let color = "color"
 }
 

@@ -9,7 +9,7 @@
 import Vapor
 import Foundation
 
-public final class Match: MatchSessionDelegate, JSONRepresentable {
+public final class Match: MatchSessionDelegate {
 
     var id: Int {
         return properties.id
@@ -39,15 +39,15 @@ public final class Match: MatchSessionDelegate, JSONRepresentable {
 
     public func makeNode() throws -> Node {
         var nodeData = properties.nodeLiteral
-        nodeData["time"] = Node(matchTimer.timeRemaining.formattedTimeString)
+        nodeData[NodeKey.time] = Node(matchTimer.timeRemaining.formattedTimeString)
         return try nodeData.makeNode()
     }
 
     func received(event: Event, from socket: WebSocket) throws {
         switch event {
         case let scoringEvent as ScoringEvent:
+            guard matchTimer.isRunning else { return }
             try session.received(event: scoringEvent)
-
         case let controlEvent as ControlEvent:
             switch controlEvent.category {
             case .addJudge:
@@ -75,16 +75,15 @@ public final class Match: MatchSessionDelegate, JSONRepresentable {
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
         properties.updateScore(scoringEvent: scoringEvent)
     }
-
-    // MARK: - JSONRepresentable
-
-    public func makeJSON() throws -> JSON {
-        return try properties.makeJSON()
-    }
 }
 
 private extension TimeInterval {
     var formattedTimeString: String {
         return String(format: "%d:%02d", Int(self / 60.0),  Int(ceil(self.truncatingRemainder(dividingBy: 60))))
     }
+}
+
+fileprivate struct NodeKey {
+    static let time = "time"
+    static let overlayClass = "overlay-display"
 }

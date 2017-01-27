@@ -1,5 +1,32 @@
 /* SCORING MATCH */
 
+.overlay {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+}
+
+.overlay > div {
+    display: flex;
+    margin-bottom: 12vh;
+    width: 30vw;
+    justify-content: center;
+}
+
+.overlay .red, .overlay .blue {
+    display: flex;
+    justify-content: space-around;
+}
+
+.overlay .red .button, .overlay .blue .button {
+    width: 10vw;
+}
+
 .header {
     width: 100%;
     display: flex;

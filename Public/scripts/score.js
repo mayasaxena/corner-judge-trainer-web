@@ -35,6 +35,7 @@ function Scoring(host) {
 
             case ' ':
                 scoring.playPause()
+                $(".overlay").toggle()
                 break;
             default:
                 break;

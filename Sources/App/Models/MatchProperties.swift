@@ -88,16 +88,12 @@ public final class MatchProperties {
     }
 
     func updateScore(scoringEvent: ScoringEvent) {
-        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.category)
-    }
-
-    private func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
         guard winningPlayer == nil else { return }
 
         var playerScore = 0.0
         var playerPenalties = 0.0
 
-        switch scoringEvent {
+        switch scoringEvent.category {
 
         case .head:
             playerScore = 3
@@ -108,7 +104,6 @@ public final class MatchProperties {
         case .technical:
             playerScore = 1
 
-        // TODO: Fix so # of kyonggos increase instead
         case .kyongGo:
             playerPenalties = 0.5
 
@@ -116,7 +111,7 @@ public final class MatchProperties {
             playerPenalties = 1
         }
 
-        if playerColor == .blue {
+        if scoringEvent.color == .blue {
             blueScore += playerScore
             bluePenalties += playerPenalties
             redScore += playerPenalties
@@ -138,38 +133,52 @@ public final class MatchProperties {
             }
         }
     }
-
-    lazy public var nodeLiteral: [String : NodeRepresentable] = { [weak self] in
-        guard let welf = self else { return [:] }
-
-        return [
-            "match-id" : welf.id,
-            "date" : welf.date.timeStampString,
-            "red-player" : welf.redPlayer.displayName.uppercased(),
-            "red-score" : welf.redScore.formattedString,
-            "red-gamjeom-count": Int(welf.redPenalties),
-            "red-kyonggo-count" : (welf.redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
-            "blue-player" : welf.bluePlayer.displayName.uppercased(),
-            "blue-score" : welf.blueScore.formattedString,
-            "blue-gamjeom-count": Int(welf.bluePenalties),
-            "blue-kyonggo-count" : (welf.bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
-            "round" : welf.round,
-            "blue-win" : welf.winningPlayer?.color == .blue ? "blink" : "",
-            "red-win" : welf.winningPlayer?.color == .red ? "blink" : "",
-        ]
-    }()
 }
 
 // MARK: Node Conversions
 
-extension MatchProperties {
+fileprivate struct NodeKey {
+    static let matchID = "match-id"
+    static let date = "date"
+    static let redName = "red-player"
+    static let redScore = "red-score"
+    static let redGamJeomCount = "red-gamjeom-count"
+    static let redKyongGoCount = "red-kyonggo-count"
+    static let blueName = "blue-player"
+    static let blueScore = "blue-score"
+    static let blueGamJeomCount = "blue-gamjeom-count"
+    static let blueKyongGoCount = "blue-kyonggo-count"
+    static let round = "round"
+    static let blueScoreClass = "blue-score-class"
+    static let redScoreClass = "red-score-class"
+}
 
-    public func makeNode() throws -> Node {
+extension MatchProperties: NodeRepresentable {
+
+    public func makeNode(context: Context) throws -> Node {
         return try Node(node: nodeLiteral)
     }
 
     public func makeJSON() throws -> JSON {
         return try JSON(makeNode())
+    }
+
+    public var nodeLiteral: [String : NodeRepresentable] {
+        return [
+            NodeKey.matchID : id,
+            NodeKey.date : date.timeStampString,
+            NodeKey.round : round,
+            NodeKey.redName : redPlayer.displayName.uppercased(),
+            NodeKey.redScore : redScore.formattedString,
+            NodeKey.redGamJeomCount : Int(redPenalties),
+            NodeKey.redKyongGoCount : (redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.redScoreClass : winningPlayer?.color == .red ? "blink" : "",
+            NodeKey.blueName : bluePlayer.displayName.uppercased(),
+            NodeKey.blueScore : blueScore.formattedString,
+            NodeKey.blueGamJeomCount : Int(bluePenalties),
+            NodeKey.blueKyongGoCount : (bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.blueScoreClass: winningPlayer?.color == .blue ? "blink" : "",
+        ]
     }
 }
 
