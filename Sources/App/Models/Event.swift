@@ -47,9 +47,7 @@ fileprivate struct JSONKey {
     static let eventType = "event"
     static let judgeID = "sent_by"
     static let data = "data"
-
     static let category = "category"
-
     static let color = "color"
 }
 
@@ -57,7 +55,11 @@ fileprivate struct JSONKey {
 
 struct ScoringEvent: Event {
     enum Category: String {
-        case body, head, technical, kyongGo, gamJeom
+        case body
+        case head
+        case technical
+        case kyongGo = "kyong-go"
+        case gamJeom = "gam-jeom"
     }
 
     let eventType: EventType = .scoring
@@ -108,11 +110,17 @@ extension ScoringEvent: Equatable {
     }
 }
 
+extension ScoringEvent {
+    public var isPenalty: Bool {
+        return category == .gamJeom || category == .kyongGo
+    }
+}
+
 // MARK: - ControlEvent
 
 struct ControlEvent: Event {
     enum Category: String {
-        case play, pause, addJudge
+        case playPause, addJudge, timer
     }
 
     let eventType: EventType = .control
@@ -130,12 +138,16 @@ struct ControlEvent: Event {
         try self.init(category: categoryRaw, judgeID: judgeID)
     }
 
+    init(category: Category, judgeID: String) {
+        self.category = category
+        self.judgeID = judgeID
+    }
+
     init(category: String, judgeID: String) throws {
         guard let category = ControlEvent.Category(rawValue: category) else {
-                throw Abort.badRequest
+            throw Abort.badRequest
         }
-        self.judgeID = judgeID
-        self.category = category
+        self.init(category: category, judgeID: judgeID)
     }
 
     func makeNode(context: Context) throws -> Node {
@@ -144,5 +156,18 @@ struct ControlEvent: Event {
             JSONKey.eventType : eventType.rawValue,
             JSONKey.data : data.makeNode()
         ])
+    }
+}
+
+extension Node {
+    func createEvent() throws -> Event {
+        let eventType = try EventType(value: self["event"]?.string)
+
+        switch eventType {
+        case .scoring:
+            return try ScoringEvent(node: node)
+        case .control:
+            return try ControlEvent(node: node)
+        }
     }
 }

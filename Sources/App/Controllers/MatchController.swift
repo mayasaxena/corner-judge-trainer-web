@@ -39,7 +39,7 @@ public final class MatchController {
 
     public func create(request: Request) throws -> ResponseRepresentable {
         let match = Match()
-        matches[match.properties.id] = match
+        matches[match.id] = match
         return Response(redirect: "show")
     }
 
@@ -63,9 +63,8 @@ public final class MatchController {
         ]
 
         for (red, blue) in playerNames {
-            let match = Match()
-            match.properties.add(redPlayerName: red, bluePlayerName: blue)
-            matches[match.properties.id] = match
+            let match = Match(redPlayerName: red, bluePlayerName: blue)
+            matches[match.id] = match
         }
     }
 
@@ -73,27 +72,7 @@ public final class MatchController {
 
     public func handle(_ node: Node, matchID: Int, socket: WebSocket) throws {
         guard let match = matches[matchID] else { throw Abort.notFound }
-        let event = try createEvent(from: node)
-
-        switch event {
-        case let controlEvent as ControlEvent:
-            try match.session.received(event: controlEvent, from: socket)
-        case let scoringEvent as ScoringEvent:
-            try match.session.received(event: scoringEvent)
-        default:
-            break
-        }
-    }
-
-    func createEvent(from node: Node) throws -> Event {
-        let eventType = try EventType(value: node["event"]?.string)
-
-        switch eventType {
-        case .scoring:
-            return try ScoringEvent(node: node)
-        case .control:
-            return try ControlEvent(node: node)
-        }
+        try match.received(event: try node.createEvent(), from: socket)
     }
 }
 

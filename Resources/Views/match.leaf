@@ -11,32 +11,57 @@
 	<div class="header">
 		<div class="match-info">
 			<div class="round">R#(round)</div>
-			<div class="time">0:00</div>
+			<div class="time">#(time)</div>
 		</div>
 	</div>
+
+	<div class="overlay">
+		<div class="red">
+			<div class="red kyong-go button">KYONG-GO</div>
+			<div class="red gam-jeom button">GAM-JEOM</div>
+		</div>
+
+		<div class="blue">
+			<div class="blue kyong-go button">KYONG-GO</div>
+			<div class="blue gam-jeom button">GAM-JEOM</div>
+		</div>
+	</div>
+
 	<div class="scoring">
 	    <div class="red">
-	        <div class="score #(red-win)">#(red-score)</div>
+	        <div class="score #(red-score-class)">#(red-score)</div>
 	    </div>
 
 	    <div class="blue">
-	        <div class="score #(blue-win)">#(blue-score)</div>
+	        <div class="score #(blue-score-class)">#(blue-score)</div>
 	    </div>
-		<div class="penalties">
-			<div id="red-penalty">
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="kyong-go penalty"></div>
-			</div>
+		<div class="penalty-background">
+			<div class="penalties">
+				<div id="red-penalty">
+					#repeat(red-gamjeom-count) {
+						<div class="penalty">
+							<div class="gam-jeom"></div>
+						</div>
+					}
+					#repeat(red-kyonggo-count) {
+						<div class="penalty">
+							<div class="kyong-go"></div>
+						</div>
+					}
+				</div>
 
-			<div id="blue-penalty">
-				<div class="gam-jeom penalty"></div>
-				<div class="gam-jeom penalty"></div>
-				<div class="kyong-go penalty"></div>
-				<div class="penalty"></div>
-				<div class="penalty"></div>
+				<div id="blue-penalty">
+					#repeat(blue-gamjeom-count) {
+						<div class="penalty">
+							<div class="gam-jeom"></div>
+						</div>
+					}
+					#repeat(blue-kyonggo-count) {
+						<div class="penalty">
+							<div class="kyong-go"></div>
+						</div>
+					}
+				</div>
 			</div>
 		</div>
 	</div>

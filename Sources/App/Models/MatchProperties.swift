@@ -19,23 +19,23 @@ public final class MatchProperties {
         static let maxScore = 99.0
         static let restTime = 30.0
         static let pointGapValue = 12.0
+        static let penaltyMax = 5.0
     }
 
     let id = Int.random(3)
-    let date = Date()
+    fileprivate let date = Date()
 
-    var redPlayer: Player
-    var bluePlayer: Player
-    let matchTimer: MatchTimer
+    fileprivate var redPlayer: Player
+    fileprivate var bluePlayer: Player
 
-    var winningPlayer: Player?
+    fileprivate var winningPlayer: Player?
     var matchType: MatchType
 
-    var restTimeInterval: TimeInterval {
+    private var restTimeInterval: TimeInterval {
         return TimeInterval(Constants.restTime)
     }
 
-    var round: Int = 1 {
+    fileprivate var round: Int = 1 {
         didSet {
             round = min(round, matchType.roundCount)
             if round == matchType.roundCount {
@@ -44,14 +44,27 @@ public final class MatchProperties {
         }
     }
 
-    var redScore: Double = 0 {
+    fileprivate var redScore: Double = 0 {
         didSet {
             redScore = min(Constants.maxScore, redScore)
         }
     }
-    var blueScore: Double = 0 {
+
+    fileprivate var redPenalties: Double = 0 {
+        didSet {
+            redPenalties = min(redPenalties, 5.0)
+        }
+    }
+
+    fileprivate var blueScore: Double = 0 {
         didSet {
             blueScore = min(Constants.maxScore, blueScore)
+        }
+    }
+
+    fileprivate var bluePenalties: Double = 0 {
+        didSet {
+            bluePenalties = min(bluePenalties, 5.0)
         }
     }
 
@@ -68,8 +81,6 @@ public final class MatchProperties {
         self.bluePlayer = bluePlayer
 
         matchType = type
-        matchTimer = MatchTimer(duration: matchType.roundDuration)
-        matchTimer.start()
     }
 
     func add(redPlayerName: String?, bluePlayerName: String?) {
@@ -78,16 +89,12 @@ public final class MatchProperties {
     }
 
     func updateScore(scoringEvent: ScoringEvent) {
-        updateScore(for: scoringEvent.color, scoringEvent: scoringEvent.category)
-    }
-
-    func updateScore(for playerColor: PlayerColor, scoringEvent: ScoringEvent.Category) {
         guard winningPlayer == nil else { return }
 
         var playerScore = 0.0
-        var otherPlayerScore = 0.0
+        var playerPenalties = 0.0
 
-        switch scoringEvent {
+        switch scoringEvent.category {
 
         case .head:
             playerScore = 3
@@ -98,22 +105,24 @@ public final class MatchProperties {
         case .technical:
             playerScore = 1
 
-        // TODO: Fix so # of kyonggos increase instead
         case .kyongGo:
-            otherPlayerScore = 0.5
+            playerPenalties = 0.5
 
         case .gamJeom:
-            otherPlayerScore = 1
+            playerPenalties = 1
         }
 
-        if playerColor == .blue {
+        if scoringEvent.color == .blue {
             blueScore += playerScore
-            redScore += otherPlayerScore
+            bluePenalties += playerPenalties
+            redScore += playerPenalties
         } else {
             redScore += playerScore
-            blueScore += otherPlayerScore
+            redPenalties += playerPenalties
+            blueScore += playerPenalties
         }
 
+        checkPenalties()
         checkPointGap()
     }
 
@@ -126,28 +135,60 @@ public final class MatchProperties {
             }
         }
     }
+
+    private func checkPenalties() {
+        if redPenalties >= Constants.penaltyMax {
+            winningPlayer = bluePlayer
+        } else if bluePenalties >= Constants.penaltyMax {
+            winningPlayer = redPlayer
+        }
+    }
 }
 
 // MARK: Node Conversions
 
-extension MatchProperties {
+fileprivate struct NodeKey {
+    static let matchID = "match-id"
+    static let date = "date"
+    static let redName = "red-player"
+    static let redScore = "red-score"
+    static let redGamJeomCount = "red-gamjeom-count"
+    static let redKyongGoCount = "red-kyonggo-count"
+    static let blueName = "blue-player"
+    static let blueScore = "blue-score"
+    static let blueGamJeomCount = "blue-gamjeom-count"
+    static let blueKyongGoCount = "blue-kyonggo-count"
+    static let round = "round"
+    static let blueScoreClass = "blue-score-class"
+    static let redScoreClass = "red-score-class"
+}
 
-    public func makeNode() throws -> Node {
-        return try Node(node: [
-            "match-id" : id,
-            "date" : date.timeStampString,
-            "red-player" : redPlayer.displayName.uppercased(),
-            "red-score" : redScore.formattedString,
-            "blue-player" : bluePlayer.displayName.uppercased(),
-            "blue-score" : blueScore.formattedString,
-            "round" : round,
-            "blue-win" : winningPlayer?.color == .blue ? "blink" : "",
-            "red-win" : winningPlayer?.color == .red ? "blink" : "",
-        ])
+extension MatchProperties: NodeRepresentable {
+
+    public func makeNode(context: Context) throws -> Node {
+        return try Node(node: nodeLiteral)
     }
 
     public func makeJSON() throws -> JSON {
         return try JSON(makeNode())
+    }
+
+    public var nodeLiteral: [String : NodeRepresentable] {
+        return [
+            NodeKey.matchID : id,
+            NodeKey.date : date.timeStampString,
+            NodeKey.round : round,
+            NodeKey.redName : redPlayer.displayName.uppercased(),
+            NodeKey.redScore : redScore.formattedString,
+            NodeKey.redGamJeomCount : Int(redPenalties),
+            NodeKey.redKyongGoCount : (redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.redScoreClass : winningPlayer?.color == .red ? "blink" : "",
+            NodeKey.blueName : bluePlayer.displayName.uppercased(),
+            NodeKey.blueScore : blueScore.formattedString,
+            NodeKey.blueGamJeomCount : Int(bluePenalties),
+            NodeKey.blueKyongGoCount : (bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.blueScoreClass: winningPlayer?.color == .blue ? "blink" : "",
+        ]
     }
 }
 

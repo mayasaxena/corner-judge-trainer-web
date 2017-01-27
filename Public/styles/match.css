@@ -1,5 +1,40 @@
 /* SCORING MATCH */
 
+.overlay {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: absolute;
+    top: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+}
+
+.overlay > div {
+    display: flex;
+    margin-bottom: 12vh;
+    width: 30vw;
+    justify-content: center;
+}
+
+.overlay .red, .overlay .blue {
+    display: flex;
+    justify-content: space-around;
+}
+
+.overlay .red .button, .overlay .blue .button {
+    width: 10vw;
+}
+
+.red.button:active {
+    background-color: #A03939;
+}
+
+.blue.button:active {
+    background-color: #28507F;
+}
+
 .header {
     width: 100%;
     display: flex;
@@ -61,24 +96,28 @@
     vertical-align: middle;
 }
 
-.penalties {
+.penalty-background {
     position: absolute;
     bottom: 0;
     background-color: rgba(39, 39, 39, 0.9);
-    height: 4em;
+    height: 8vh;
     width: 100%;
     display: flex;
+}
+
+.penalties {
+    width: 100%;
+    height: 100%;
+    display: flex;
     align-items: center;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 #red-penalty, #blue-penalty {
     display: flex;
-    justify-content: space-around;
-}
-
-#red-penalty {
-    flex-flow: row;
+    width: 50%;
+    height: 100%;
+    justify-content: flex-start
 }
 
 #blue-penalty {
@@ -86,18 +125,25 @@
 }
 
 .penalty {
-    width: 2.5em;
-    height: 2.5em;
-    border-radius: 1.25em;
-    flex-shrink: 0;
-    margin: 0 1em;
+    width: 10%;
+    height: auto;
+    margin: auto 0;
+    border-radius: 2.5vh;
+    flex-shrink: 0.5;
 }
 
-.kyong-go.penalty {
+.penalty .kyong-go, .penalty .gam-jeom {
+    height: 5vh;
+    width: 5vh;
+    border-radius: 2.5vw;
+    margin: auto;
+}
+
+.penalty .kyong-go {
     background-color: #FFD046;
 }
 
-.gam-jeom.penalty {
+.penalty .gam-jeom {
     background-color: #960200;
 }
 
@@ -108,6 +154,6 @@
 
 @keyframes blinker {
     0% { visibility: visible; }
-    50% { visibility: hidden; }
+    60% { visibility: hidden; }
     100% { visibility: visible; }
 }

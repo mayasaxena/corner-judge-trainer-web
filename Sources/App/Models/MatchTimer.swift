@@ -10,19 +10,22 @@ import Foundation
 
 final class MatchTimer {
     private var timer: DispatchSourceTimer?
-    private var timeRemaining: TimeInterval
+    var timeRemaining: TimeInterval
 
-//    private var handler: (Void) -> Void
+    var action: (Void) throws -> Void = {}
+
+    var isRunning: Bool {
+        return timer != nil
+    }
 
     init(duration: TimeInterval) {
         self.timeRemaining = duration
-//        self.handler = handler
     }
 
     func start() {
         let queue = DispatchQueue(label: "timerQueue")
         timer = DispatchSource.makeTimerSource(queue: queue)
-        timer?.scheduleRepeating(deadline: .now(), interval: .seconds(1), leeway: .seconds(1))
+        timer?.scheduleRepeating(deadline: .now() + 0.1, interval: .seconds(1), leeway: .milliseconds(100))
 
         timer?.setEventHandler { [weak self] in
             guard let welf = self else { return }
@@ -30,8 +33,11 @@ final class MatchTimer {
             if welf.timeRemaining <= 0 {
                 welf.stop()
             }
-            print("remaining: \(welf.timeRemaining)")
-//            welf.handler()
+            do {
+                try welf.action()
+            } catch(let error) {
+                print("Timer action failed with error: \(error)")
+            }
         }
 
         timer?.resume()
