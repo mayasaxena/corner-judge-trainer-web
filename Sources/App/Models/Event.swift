@@ -55,7 +55,11 @@ fileprivate struct JSONKey {
 
 struct ScoringEvent: Event {
     enum Category: String {
-        case body, head, technical, kyongGo, gamJeom
+        case body
+        case head
+        case technical
+        case kyongGo = "kyong-go"
+        case gamJeom = "gam-jeom"
     }
 
     let eventType: EventType = .scoring
@@ -103,6 +107,12 @@ extension ScoringEvent: Equatable {
     public static func ==(lhs: ScoringEvent, rhs: ScoringEvent) -> Bool {
         return  lhs.category == rhs.category &&
                 lhs.color == rhs.color
+    }
+}
+
+extension ScoringEvent {
+    public var isPenalty: Bool {
+        return category == .gamJeom || category == .kyongGo
     }
 }
 

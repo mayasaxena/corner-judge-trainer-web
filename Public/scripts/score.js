@@ -55,6 +55,19 @@ function Scoring(host) {
         })
     }
 
+    $(".button").click(function() {
+        var classList = this.classList
+        var color = classList[0]
+        var category = classList[1]
+        if ((color == "red" || color == "blue") &&
+            (category == "kyong-go" || category == "gam-jeom")) {
+
+            if (confirm("Give " + category + " to " + color + "?")) {
+                scoring.send(category, color)
+            }
+        }
+    });
+
     // BINDINGS
 
     server.bind("open", function() {

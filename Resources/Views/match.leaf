@@ -17,13 +17,13 @@
 
 	<div class="overlay">
 		<div class="red">
-			<div class="red button">KYONG-GO</div>
-			<div class="red button">GAM-JEOM</div>
+			<div class="red kyong-go button">KYONG-GO</div>
+			<div class="red gam-jeom button">GAM-JEOM</div>
 		</div>
 
 		<div class="blue">
-			<div class="blue button">KYONG-GO</div>
-			<div class="blue button">GAM-JEOM</div>
+			<div class="blue kyong-go button">KYONG-GO</div>
+			<div class="blue gam-jeom button">GAM-JEOM</div>
 		</div>
 	</div>
 

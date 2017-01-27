@@ -19,6 +19,7 @@ public final class MatchProperties {
         static let maxScore = 99.0
         static let restTime = 30.0
         static let pointGapValue = 12.0
+        static let penaltyMax = 5.0
     }
 
     let id = Int.random(3)
@@ -51,7 +52,7 @@ public final class MatchProperties {
 
     fileprivate var redPenalties: Double = 0 {
         didSet {
-            print("Red penalties: \(redPenalties)")
+            redPenalties = min(redPenalties, 5.0)
         }
     }
 
@@ -63,7 +64,7 @@ public final class MatchProperties {
 
     fileprivate var bluePenalties: Double = 0 {
         didSet {
-            print("Blue penalties: \(redPenalties)")
+            bluePenalties = min(bluePenalties, 5.0)
         }
     }
 
@@ -121,6 +122,7 @@ public final class MatchProperties {
             blueScore += playerPenalties
         }
 
+        checkPenalties()
         checkPointGap()
     }
 
@@ -131,6 +133,14 @@ public final class MatchProperties {
             } else if blueScore - redScore >= Constants.pointGapValue {
                 winningPlayer = bluePlayer
             }
+        }
+    }
+
+    private func checkPenalties() {
+        if redPenalties >= Constants.penaltyMax {
+            winningPlayer = bluePlayer
+        } else if bluePenalties >= Constants.penaltyMax {
+            winningPlayer = redPlayer
         }
     }
 }

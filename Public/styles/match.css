@@ -27,6 +27,14 @@
     width: 10vw;
 }
 
+.red.button:active {
+    background-color: #A03939;
+}
+
+.blue.button:active {
+    background-color: #28507F;
+}
+
 .header {
     width: 100%;
     display: flex;
@@ -124,7 +132,7 @@
     flex-shrink: 0.5;
 }
 
-.kyong-go, .gam-jeom {
+.penalty .kyong-go, .penalty .gam-jeom {
     height: 5vh;
     width: 5vh;
     border-radius: 2.5vw;
@@ -146,6 +154,6 @@
 
 @keyframes blinker {
     0% { visibility: visible; }
-    50% { visibility: hidden; }
+    60% { visibility: hidden; }
     100% { visibility: visible; }
 }

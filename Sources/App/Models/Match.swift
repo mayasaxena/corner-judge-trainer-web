@@ -46,7 +46,7 @@ public final class Match: MatchSessionDelegate {
     func received(event: Event, from socket: WebSocket) throws {
         switch event {
         case let scoringEvent as ScoringEvent:
-            guard matchTimer.isRunning else { return }
+            guard matchTimer.isRunning || scoringEvent.isPenalty else { return }
             try session.received(event: scoringEvent)
         case let controlEvent as ControlEvent:
             switch controlEvent.category {
