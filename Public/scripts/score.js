@@ -35,7 +35,6 @@ function Scoring(host) {
 
             case ' ':
                 scoring.playPause()
-                $(".overlay").toggle()
                 break;
             default:
                 break;
@@ -55,10 +54,11 @@ function Scoring(host) {
         })
     }
 
-    $(".button").click(function() {
+    $(".overlay-wrapper").on("click", ".button", function() {
         var classList = this.classList
         var color = classList[0]
         var category = classList[1]
+        console.log("click")
         if ((color == "red" || color == "blue") &&
             (category == "kyong-go" || category == "gam-jeom")) {
 
@@ -82,6 +82,7 @@ function Scoring(host) {
 
     server.bind("control", function(event) {
         console.log(event)
+        $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
         $(".match-info").load(document.URL + " .match-info > *")
     })
 };

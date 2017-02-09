@@ -15,48 +15,79 @@ public final class Match: MatchSessionDelegate {
         return properties.id
     }
 
-    private let properties = MatchProperties()
+    private let properties: MatchProperties
     private let session = MatchSession()
 
     private let matchTimer: MatchTimer
 
-    init() {
-        matchTimer = MatchTimer(duration: 30)
-        matchTimer.action = { [weak self] in
+    private lazy var matchTimerAction: (Void) -> Void = {
+        let action = { [weak self] in
             guard
                 let welf = self,
                 let eventString = ControlEvent(category: .timer, judgeID: "timer").jsonString
                 else { return }
-            try welf.session.send(jsonString: eventString)
+            do {
+                try welf.session.send(jsonString: eventString)
+            } catch(let error) {
+                print("Sending failed with error: \(error)")
+            }
         }
+        return action
+    }()
+
+    init(properties: MatchProperties = MatchProperties()) {
+        self.properties = properties
+
+        matchTimer = MatchTimer(duration: properties.matchType.roundDuration)
+        matchTimer.action = matchTimerAction
         session.delegate = self
     }
 
-    convenience init(redPlayerName: String, bluePlayerName: String) {
-        self.init()
-        properties.add(redPlayerName: redPlayerName, bluePlayerName: bluePlayerName)
+    convenience init(redPlayerName: String, bluePlayerName: String, type: MatchType = .none) {
+        let properties = MatchProperties(
+            redPlayer: Player(color: .red, name: redPlayerName),
+            bluePlayer: Player(color: .blue, name: bluePlayerName),
+            type: type
+        )
+        self.init(properties: properties)
     }
 
     public func makeNode() throws -> Node {
         var nodeData = properties.nodeLiteral
         nodeData[NodeKey.time] = Node(matchTimer.timeRemaining.formattedTimeString)
+        nodeData[NodeKey.paused] = !matchTimer.isRunning
         return try nodeData.makeNode()
     }
 
     func received(event: Event, from socket: WebSocket) throws {
         switch event {
+
         case let scoringEvent as ScoringEvent:
-            guard matchTimer.isRunning || scoringEvent.isPenalty else { return }
+            guard shouldScore(event: scoringEvent) else { return }
             try session.received(event: scoringEvent)
+
         case let controlEvent as ControlEvent:
-            switch controlEvent.category {
-            case .addJudge:
+            if controlEvent.category == .addJudge {
                 try session.addConnection(to: socket, forJudgeID: event.judgeID)
-            case .playPause:
-                toggleMatchTimer()
-            default:
-                break
+            } else {
+                handleControlEvent(controlEvent)
             }
+
+        default:
+            break
+        }
+    }
+
+    private func shouldScore(event: ScoringEvent) -> Bool {
+        return !properties.isWon && (matchTimer.isRunning || event.isPenalty)
+    }
+
+    private func handleControlEvent(_ event: ControlEvent) {
+        switch event.category {
+        case .playPause:
+            guard !matchTimer.isDone && !properties.isWon else { break }
+            toggleMatchTimer()
+            matchTimerAction()
         default:
             break
         }
@@ -85,5 +116,5 @@ private extension TimeInterval {
 
 fileprivate struct NodeKey {
     static let time = "time"
-    static let overlayClass = "overlay-display"
+    static let paused = "paused"
 }

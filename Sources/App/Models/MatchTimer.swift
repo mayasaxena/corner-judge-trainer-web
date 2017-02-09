@@ -13,10 +13,14 @@ final class MatchTimer {
     private var timer: DispatchSourceTimer?
     var timeRemaining: TimeInterval
 
-    var action: (Void) throws -> Void = {}
+    var action: (Void) -> Void = {}
 
     var isRunning: Bool {
         return timer != nil
+    }
+
+    var isDone: Bool {
+        return timeRemaining <= 0
     }
 
     init(duration: TimeInterval) {
@@ -30,15 +34,13 @@ final class MatchTimer {
 
         timer?.setEventHandler { [weak self] in
             guard let welf = self else { return }
-            welf.timeRemaining -= 1
+
             if welf.timeRemaining <= 0 {
                 welf.stop()
+            } else {
+                welf.timeRemaining -= 1
             }
-            do {
-                try welf.action()
-            } catch(let error) {
-                print("Timer action failed with error: \(error)")
-            }
+            welf.action()
         }
 
         timer?.resume()

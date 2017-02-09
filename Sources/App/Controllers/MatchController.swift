@@ -63,7 +63,7 @@ public final class MatchController {
         ]
 
         for (red, blue) in playerNames {
-            let match = Match(redPlayerName: red, bluePlayerName: blue)
+            let match = Match(redPlayerName: red, bluePlayerName: blue, type: .none)
             matches[match.id] = match
         }
     }

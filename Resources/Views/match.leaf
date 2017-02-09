@@ -15,19 +15,24 @@
 		</div>
 	</div>
 
-	<div class="overlay">
-		<div class="red">
-			<div class="red kyong-go button">KYONG-GO</div>
-			<div class="red gam-jeom button">GAM-JEOM</div>
-		</div>
+	<div class="overlay-wrapper">
+		#if(paused) {
+			<div class="overlay">
+				<div class="red">
+					<div class="red kyong-go button">KYONG-GO</div>
+					<div class="red gam-jeom button">GAM-JEOM</div>
+				</div>
 
-		<div class="blue">
-			<div class="blue kyong-go button">KYONG-GO</div>
-			<div class="blue gam-jeom button">GAM-JEOM</div>
-		</div>
+				<div class="blue">
+					<div class="blue kyong-go button">KYONG-GO</div>
+					<div class="blue gam-jeom button">GAM-JEOM</div>
+				</div>
+			</div>
+		}
 	</div>
 
 	<div class="scoring">
+
 	    <div class="red">
 	        <div class="score #(red-score-class)">#(red-score)</div>
 	    </div>
@@ -35,6 +40,7 @@
 	    <div class="blue">
 	        <div class="score #(blue-score-class)">#(blue-score)</div>
 	    </div>
+
 		<div class="penalty-background">
 			<div class="penalties">
 				<div id="red-penalty">

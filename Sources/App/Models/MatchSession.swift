@@ -15,7 +15,7 @@ protocol MatchSessionDelegate: class {
 
 public final class MatchSession {
     private struct Constants {
-        static let ConfirmationInterval = 1.0
+        static let confirmationInterval = 1.0
     }
 
     private var connections: [String: WebSocket] = [:]
@@ -33,7 +33,7 @@ public final class MatchSession {
             }
         } else {
             receivedEventInfo = (event: event, count: 1)
-            drop.console.wait(seconds: Constants.ConfirmationInterval)
+            drop.console.wait(seconds: Constants.confirmationInterval)
             try confirmScoringEvent()
         }
     }

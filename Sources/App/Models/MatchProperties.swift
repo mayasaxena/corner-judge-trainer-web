@@ -23,13 +23,18 @@ public final class MatchProperties {
     }
 
     let id = Int.random(3)
+    let matchType: MatchType
+
+    var isWon: Bool {
+        return winningPlayer != nil
+    }
+
     fileprivate let date = Date()
 
     fileprivate var redPlayer: Player
     fileprivate var bluePlayer: Player
 
     fileprivate var winningPlayer: Player?
-    var matchType: MatchType
 
     private var restTimeInterval: TimeInterval {
         return TimeInterval(Constants.restTime)
