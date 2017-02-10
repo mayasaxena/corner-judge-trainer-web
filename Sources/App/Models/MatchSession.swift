@@ -28,14 +28,28 @@ public final class MatchSession {
         connections[judgeID] = socket
     }
 
-    func send(jsonString: String) throws {
+    func send(jsonString: String?) throws {
+
+        guard let json = jsonString else {
+            let message = "Could not convert event to JSON"
+            log(message)
+            throw Abort.custom(status: .badRequest, message: message)
+        }
+
         for (_, socket) in connections {
-            try socket.send(jsonString)
+            try socket.send(json)
         }
     }
 
     // TODO: Refactor to allow events other than first received to be confirmed
     func received(event: ScoringEvent) throws {
+
+        guard !event.isPenalty else {
+            log("\(event.description) given by \(event.judgeID)")
+            delegate?.sessionDidConfirmScoringEvent(scoringEvent: event)
+            try send(jsonString: event.jsonString)
+            return
+        }
 
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
@@ -52,17 +66,16 @@ public final class MatchSession {
 
     private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
-
         log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(connections.count) judges")
 
         if confirmationInfo.count >= Int(ceil(Double(connections.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
-            guard let eventString = confirmationInfo.event.jsonString else { throw Abort.notFound }
-            try send(jsonString: eventString)
+            try send(jsonString: confirmationInfo.event.jsonString)
             log("\(confirmationInfo.event.description) confirmed")
         } else {
             log("\(confirmationInfo.event.description) not confirmed")
         }
+
         receivedEventInfo = nil
     }
 
