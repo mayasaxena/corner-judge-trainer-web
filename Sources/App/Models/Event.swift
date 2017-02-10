@@ -18,10 +18,9 @@ extension EventType {
             let value = value,
             let eventType = EventType(rawValue: value)
             else {
-                throw Abort.custom(
-                    status: .badRequest,
-                    message: "Event data must contain event type"
-                )
+                let message = "Event data must contain event type"
+                log(message)
+                throw Abort.custom(status: .badRequest, message: message)
             }
 
         self = eventType
@@ -103,16 +102,20 @@ struct ScoringEvent: Event {
     }
 }
 
+extension ScoringEvent {
+    public var description: String {
+        return "[\(color.displayName) \(category.rawValue.capitalized)]"
+    }
+
+    public var isPenalty: Bool {
+        return category == .gamJeom || category == .kyongGo
+    }
+}
+
 extension ScoringEvent: Equatable {
     public static func ==(lhs: ScoringEvent, rhs: ScoringEvent) -> Bool {
         return  lhs.category == rhs.category &&
                 lhs.color == rhs.color
-    }
-}
-
-extension ScoringEvent {
-    public var isPenalty: Bool {
-        return category == .gamJeom || category == .kyongGo
     }
 }
 

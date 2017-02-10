@@ -29,7 +29,7 @@ public final class Match: MatchSessionDelegate {
             do {
                 try welf.session.send(jsonString: eventString)
             } catch(let error) {
-                print("Sending failed with error: \(error)")
+                log(error: error)
             }
         }
         return action

@@ -15,6 +15,8 @@ public final class MatchController {
 
     public init(droplet: Droplet) {
         drop = droplet
+        Logging.isEnabled = true
+        Logging.shouldLogSocketStream = true
     }
 
     // MARK: - Routes

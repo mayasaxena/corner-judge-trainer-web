@@ -24,12 +24,24 @@ public final class MatchSession {
 
     weak var delegate: MatchSessionDelegate?
 
+    func addConnection(to socket: WebSocket, forJudgeID judgeID: String) throws {
+        connections[judgeID] = socket
+    }
+
+    func send(jsonString: String) throws {
+        for (_, socket) in connections {
+            try socket.send(jsonString)
+        }
+    }
+
+    // TODO: Refactor to allow events other than first received to be confirmed
     func received(event: ScoringEvent) throws {
+
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
                 receivedEventInfo?.count += 1
             } else {
-                print("RECEIVED CONFLICTING SCORING EVENT: \(event)")
+                log("Received conflicting scoring event: \(event.description)")
             }
         } else {
             receivedEventInfo = (event: event, count: 1)
@@ -38,25 +50,20 @@ public final class MatchSession {
         }
     }
 
-    func addConnection(to socket: WebSocket, forJudgeID judgeID: String) throws {
-        connections[judgeID] = socket
-    }
-
     private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
+
+        log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(connections.count) judges")
+
         if confirmationInfo.count >= Int(ceil(Double(connections.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
             guard let eventString = confirmationInfo.event.jsonString else { throw Abort.notFound }
             try send(jsonString: eventString)
+            log("\(confirmationInfo.event.description) confirmed")
         } else {
-            print("Event not confirmed")
+            log("\(confirmationInfo.event.description) not confirmed")
         }
         receivedEventInfo = nil
     }
 
-    func send(jsonString: String) throws {
-        for (_, socket) in connections {
-            try socket.send(jsonString)
-        }
-    }
 }

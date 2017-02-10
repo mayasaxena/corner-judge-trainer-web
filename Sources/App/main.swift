@@ -18,12 +18,12 @@ drop.resource("match", matchController)
 
 drop.socket("match-ws", Int.self) { request, socket, matchID in
     socket.onText = { socket, text in
-        print(text)
+        log(fromSocket: text)
 
         try background {
             while socket.state == .open {
                 try? socket.ping()
-                drop.console.wait(seconds: 10) // every 10 seconds
+                drop.console.wait(seconds: 10) // ping every 10 seconds to keep open
             }
         }
 
