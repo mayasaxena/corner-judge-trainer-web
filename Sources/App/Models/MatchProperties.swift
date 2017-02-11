@@ -148,6 +148,11 @@ public final class MatchProperties {
             winningPlayer = redPlayer
         }
     }
+
+    func endMatch() {
+        // TODO: Deal with ties
+        winningPlayer = redScore > blueScore ? redPlayer : bluePlayer
+    }
 }
 
 // MARK: Node Conversions

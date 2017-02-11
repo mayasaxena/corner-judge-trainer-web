@@ -31,6 +31,10 @@ public final class Match: MatchSessionDelegate {
             } catch(let error) {
                 log(error: error)
             }
+
+            if welf.matchTimer.isDone {
+                welf.properties.endMatch()
+            }
         }
         return action
     }()
@@ -54,7 +58,7 @@ public final class Match: MatchSessionDelegate {
 
     public func makeNode() throws -> Node {
         var nodeData = properties.nodeLiteral
-        nodeData[NodeKey.time] = Node(matchTimer.timeRemaining.formattedTimeString)
+        nodeData[NodeKey.time] = Node(matchTimer.displayTime)
         nodeData[NodeKey.paused] = !matchTimer.isRunning
         return try nodeData.makeNode()
     }
@@ -86,18 +90,10 @@ public final class Match: MatchSessionDelegate {
         switch event.category {
         case .playPause:
             guard !matchTimer.isDone && !properties.isWon else { break }
-            toggleMatchTimer()
+            matchTimer.toggle()
             matchTimerAction()
         default:
             break
-        }
-    }
-
-    func toggleMatchTimer() {
-        if matchTimer.isRunning {
-            matchTimer.stop()
-        } else {
-            matchTimer.start()
         }
     }
 
@@ -105,12 +101,6 @@ public final class Match: MatchSessionDelegate {
 
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
         properties.updateScore(scoringEvent: scoringEvent)
-    }
-}
-
-private extension TimeInterval {
-    var formattedTimeString: String {
-        return String(format: "%d:%02d", Int(self / 60.0),  Int(ceil(self.truncatingRemainder(dividingBy: 60))))
     }
 }
 
