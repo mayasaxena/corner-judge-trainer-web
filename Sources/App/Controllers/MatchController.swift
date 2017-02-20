@@ -23,10 +23,13 @@ public final class MatchController {
 
     public func index(_ request: Request) throws -> ResponseRepresentable {
         if MOCKING {
-            populateMatches()
+            populateMatchesIfNecessary()
         }
 
-        let matchNodes = try matches.map { try $0.value.makeNode() }
+        let matchNodes = try matches.values
+            .filter { $0.status != .completed }
+            .map { try $0.makeNode() }
+
         let context = [
             "matches" : Node.array(matchNodes),
             "match-count" : Node(matchNodes.count)
@@ -54,8 +57,8 @@ public final class MatchController {
         return try drop.view.make("match", match.makeNode())
     }
 
-    private func populateMatches() {
-        matches = [:]
+    private func populateMatchesIfNecessary() {
+        guard matches.isEmpty else { return }
 
         let playerNames: [(String, String)] = [
             ("Kira Tomlinson", "Eliza Schreibman"),

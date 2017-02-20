@@ -9,11 +9,17 @@
 import Vapor
 import Foundation
 
+public enum MatchStatus: String {
+    case new, ongoing, completed
+}
+
 public final class Match: MatchSessionDelegate {
 
     var id: Int {
         return model.id
     }
+
+    var status = MatchStatus.new
 
     private let model: MatchModel
     private let session = MatchSession()
@@ -54,6 +60,7 @@ public final class Match: MatchSessionDelegate {
         var nodeData = model.nodeLiteral
         nodeData[NodeKey.time] = Node(matchTimer.displayTime)
         nodeData[NodeKey.overlayVisible] = !model.isWon && (!matchTimer.isRunning || isRestRound)
+        nodeData[NodeKey.status] = status.rawValue
         return try nodeData.makeNode()
     }
 
@@ -85,6 +92,11 @@ public final class Match: MatchSessionDelegate {
     private func handleControlEvent(_ event: ControlEvent) {
         switch event.category {
         case .playPause:
+
+            if status == .new {
+                status = .ongoing
+            }
+
             guard !matchTimer.isDone && !model.isWon else { break }
             matchTimer.toggle()
             sendTimerEvent()
@@ -105,6 +117,7 @@ public final class Match: MatchSessionDelegate {
 
         guard model.round < model.matchType.roundCount else {
             model.endMatch()
+            status = .completed
             try? session.send(controlEvent: ControlEvent(category: .endMatch, judgeID: "timer"))
             return
         }
@@ -134,4 +147,5 @@ public final class Match: MatchSessionDelegate {
 fileprivate struct NodeKey {
     static let time = "time"
     static let overlayVisible = "overlay-visible"
+    static let status = "status"
 }

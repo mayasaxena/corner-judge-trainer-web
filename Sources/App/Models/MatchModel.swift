@@ -15,7 +15,7 @@ public final class MatchModel {
     private struct Constants {
         static let matchIDLength = 3
         static let maxScore = 99.0
-        static let restTime = 10.0
+        static let restTime = 30.0
         static let pointGapValue = 12.0
         static let penaltyMax = 5.0
     }
