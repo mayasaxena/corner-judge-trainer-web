@@ -28,7 +28,11 @@ public final class MatchSession {
         connections[judgeID] = socket
     }
 
-    func send(jsonString: String?) throws {
+    func send(controlEvent: ControlEvent) throws {
+        try send(jsonString: controlEvent.jsonString)
+    }
+
+    private func send(jsonString: String?) throws {
 
         guard let json = jsonString else {
             let message = "Could not convert event to JSON"

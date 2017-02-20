@@ -33,9 +33,9 @@ final class MatchTimer {
         self.timeRemaining = duration
     }
 
-    func start() {
+    func start(delay: TimeInterval = 0.1) {
         timer = DispatchSource.makeTimerSource(queue: queue)
-        timer?.scheduleRepeating(deadline: .now() + 0.1, interval: .seconds(1), leeway: .milliseconds(100))
+        timer?.scheduleRepeating(deadline: .now() + delay, interval: .seconds(1), leeway: .milliseconds(100))
 
         timer?.setEventHandler { [weak self] in
             guard let welf = self else { return }

@@ -82,7 +82,11 @@ function Scoring(host) {
 
     server.bind("control", function(event) {
         console.log(event)
-        $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
-        $(".match-info").load(document.URL + " .match-info > *")
+        if (event.category != undefined && event.category == "endMatch") {
+            $('.scoring').load(document.URL +  ' .scoring > *');
+        } else {
+            $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
+            $(".match-info").load(document.URL + " .match-info > *")
+        }
     })
 };

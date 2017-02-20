@@ -16,7 +16,7 @@
 	</div>
 
 	<div class="overlay-wrapper">
-		#if(paused) {
+		#if(overlay-visible) {
 			<div class="overlay">
 				<div class="red">
 					<div class="red kyong-go button">KYONG-GO</div>

@@ -1,5 +1,5 @@
 //
-//  MatchInfo.swift
+//  MatchModel.swift
 //  corner-judge-trainer-web
 //
 //  Created by Maya Saxena on 10/21/16.
@@ -10,14 +10,12 @@ import Vapor
 import Foundation
 import Random
 
-public final class MatchProperties {
-
-    static let current = Match()
+public final class MatchModel {
 
     private struct Constants {
         static let matchIDLength = 3
         static let maxScore = 99.0
-        static let restTime = 30.0
+        static let restTime = 10.0
         static let pointGapValue = 12.0
         static let penaltyMax = 5.0
     }
@@ -29,25 +27,22 @@ public final class MatchProperties {
         return winningPlayer != nil
     }
 
+    var restTimeInterval: TimeInterval {
+        return TimeInterval(Constants.restTime)
+    }
+
+    var round: Int = 1 {
+        didSet {
+            round = min(round, matchType.roundCount)
+        }
+    }
+
     fileprivate let date = Date()
 
     fileprivate var redPlayer: Player
     fileprivate var bluePlayer: Player
 
     fileprivate var winningPlayer: Player?
-
-    private var restTimeInterval: TimeInterval {
-        return TimeInterval(Constants.restTime)
-    }
-
-    fileprivate var round: Int = 1 {
-        didSet {
-            round = min(round, matchType.roundCount)
-            if round == matchType.roundCount {
-                winningPlayer = redScore > blueScore ? redPlayer : bluePlayer
-            }
-        }
-    }
 
     fileprivate var redScore: Double = 0 {
         didSet {
@@ -173,7 +168,7 @@ fileprivate struct NodeKey {
     static let redScoreClass = "red-score-class"
 }
 
-extension MatchProperties: NodeRepresentable {
+extension MatchModel: NodeRepresentable {
 
     public func makeNode(context: Context) throws -> Node {
         return try Node(node: nodeLiteral)
@@ -244,7 +239,7 @@ public enum MatchType: Int {
         case .aTeam, .bTeam, .cTeam:
             return 2
         case .none:
-            return 0
+            return 2
         default:
             return 3
         }

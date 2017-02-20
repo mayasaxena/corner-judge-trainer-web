@@ -12,54 +12,48 @@ import Foundation
 public final class Match: MatchSessionDelegate {
 
     var id: Int {
-        return properties.id
+        return model.id
     }
 
-    private let properties: MatchProperties
+    private let model: MatchModel
     private let session = MatchSession()
 
     private let matchTimer: MatchTimer
 
-    private lazy var matchTimerAction: (Void) -> Void = {
-        let action = { [weak self] in
-            guard
-                let welf = self,
-                let eventString = ControlEvent(category: .timer, judgeID: "timer").jsonString
-                else { return }
-            do {
-                try welf.session.send(jsonString: eventString)
-            } catch(let error) {
-                log(error: error)
-            }
+    private var isRestRound = false
+    private var currentRoundDuration: TimeInterval = 0
+
+    init(model: MatchModel = MatchModel()) {
+        self.model = model
+
+        currentRoundDuration = model.matchType.roundDuration
+
+        matchTimer = MatchTimer(duration: currentRoundDuration)
+        matchTimer.action = { [weak self] in
+            guard let welf = self else { return }
 
             if welf.matchTimer.isDone {
-                welf.properties.endMatch()
+                welf.handleEndOfRound()
             }
+
+            welf.sendTimerEvent()
         }
-        return action
-    }()
-
-    init(properties: MatchProperties = MatchProperties()) {
-        self.properties = properties
-
-        matchTimer = MatchTimer(duration: properties.matchType.roundDuration)
-        matchTimer.action = matchTimerAction
         session.delegate = self
     }
 
     convenience init(redPlayerName: String, bluePlayerName: String, type: MatchType = .none) {
-        let properties = MatchProperties(
+        let model = MatchModel(
             redPlayer: Player(color: .red, name: redPlayerName),
             bluePlayer: Player(color: .blue, name: bluePlayerName),
             type: type
         )
-        self.init(properties: properties)
+        self.init(model: model)
     }
 
     public func makeNode() throws -> Node {
-        var nodeData = properties.nodeLiteral
+        var nodeData = model.nodeLiteral
         nodeData[NodeKey.time] = Node(matchTimer.displayTime)
-        nodeData[NodeKey.paused] = !matchTimer.isRunning
+        nodeData[NodeKey.overlayVisible] = !model.isWon && (!matchTimer.isRunning || isRestRound)
         return try nodeData.makeNode()
     }
 
@@ -83,28 +77,61 @@ public final class Match: MatchSessionDelegate {
     }
 
     private func shouldScore(event: ScoringEvent) -> Bool {
-        return !properties.isWon && (matchTimer.isRunning || event.isPenalty)
+        return  !model.isWon &&
+                !isRestRound &&
+                (matchTimer.isRunning || event.isPenalty)
     }
 
     private func handleControlEvent(_ event: ControlEvent) {
         switch event.category {
         case .playPause:
-            guard !matchTimer.isDone && !properties.isWon else { break }
+            guard !matchTimer.isDone && !model.isWon else { break }
             matchTimer.toggle()
-            matchTimerAction()
+            sendTimerEvent()
         default:
             break
         }
     }
 
+    private func sendTimerEvent() {
+        do {
+            try session.send(controlEvent: ControlEvent(category: .timer, judgeID: "timer"))
+        } catch(let error) {
+            log(error: error)
+        }
+    }
+
+    private func handleEndOfRound() {
+
+        guard model.round < model.matchType.roundCount else {
+            model.endMatch()
+            try? session.send(controlEvent: ControlEvent(category: .endMatch, judgeID: "timer"))
+            return
+        }
+
+        if isRestRound {
+            // Set to normal round
+            currentRoundDuration = model.matchType.roundDuration
+            isRestRound = false
+            model.round += 1
+        } else {
+            // Set to rest round
+            currentRoundDuration = model.restTimeInterval
+            isRestRound = true
+        }
+
+        matchTimer.reset(time: currentRoundDuration)
+        matchTimer.start(delay: 1)
+    }
+
     // MARK: - MatchSessionDelegate
 
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
-        properties.updateScore(scoringEvent: scoringEvent)
+        model.updateScore(scoringEvent: scoringEvent)
     }
 }
 
 fileprivate struct NodeKey {
     static let time = "time"
-    static let paused = "paused"
+    static let overlayVisible = "overlay-visible"
 }

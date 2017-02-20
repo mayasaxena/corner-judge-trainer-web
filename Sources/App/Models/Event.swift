@@ -34,11 +34,7 @@ protocol Event: NodeRepresentable {
 
 extension Event {
     var jsonString: String? {
-        do {
-            return try JSON(makeNode()).makeBytes().string()
-        } catch {
-            return nil
-        }
+        return try? JSON(makeNode()).makeBytes().string()
     }
 }
 
@@ -123,7 +119,10 @@ extension ScoringEvent: Equatable {
 
 struct ControlEvent: Event {
     enum Category: String {
-        case playPause, addJudge, timer
+        case playPause
+        case addJudge
+        case timer
+        case endMatch
     }
 
     let eventType: EventType = .control
