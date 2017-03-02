@@ -11,7 +11,7 @@ import HTTP
 
 public final class MatchController {
     let drop: Droplet
-    var matches: [Int : Match] = [:]
+    var matchManagers: [Int : MatchManager] = [:]
 
     public init(droplet: Droplet) {
         drop = droplet
@@ -26,9 +26,9 @@ public final class MatchController {
             populateMatchesIfNecessary()
         }
 
-        let matchNodes = try matches.values
-            .filter { $0.status != .completed }
-            .map { try $0.makeNode() }
+        let matchNodes = try matchManagers.values
+            .filter { $0.match.status != .completed }
+            .map { try $0.match.makeNode() }
 
         let context = [
             "matches" : Node.array(matchNodes),
@@ -44,7 +44,7 @@ public final class MatchController {
 
     public func create(request: Request) throws -> ResponseRepresentable {
         let match = Match()
-        matches[match.id] = match
+        matchManagers[match.id] = MatchManager(match: match)
         return Response(redirect: "show")
     }
 
@@ -53,12 +53,12 @@ public final class MatchController {
     }
 
     public func show(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
-        guard let match = matches[id] else { throw Abort.notFound }
-        return try drop.view.make("match", match.makeNode())
+        guard let manager = matchManagers[id] else { throw Abort.notFound }
+        return try drop.view.make("match", manager.makeNode())
     }
 
     private func populateMatchesIfNecessary() {
-        guard matches.isEmpty else { return }
+        guard matchManagers.isEmpty else { return }
 
         let playerNames: [(String, String)] = [
             ("Kira Tomlinson", "Eliza Schreibman"),
@@ -69,15 +69,15 @@ public final class MatchController {
 
         for (red, blue) in playerNames {
             let match = Match(redPlayerName: red, bluePlayerName: blue, type: .none)
-            matches[match.id] = match
+            matchManagers[match.id] = MatchManager(match: match)
         }
     }
 
     // MARK: - Event Handling
 
     public func handle(_ node: Node, matchID: Int, socket: WebSocket) throws {
-        guard let match = matches[matchID] else { throw Abort.notFound }
-        try match.received(event: try node.createEvent(), from: socket)
+        guard let manager = matchManagers[matchID] else { throw Abort.notFound }
+        try manager.received(event: try node.createEvent(), from: socket)
     }
 }
 
