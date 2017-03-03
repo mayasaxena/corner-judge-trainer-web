@@ -10,36 +10,32 @@ import Foundation
 
 public enum PlayerColor: String {
     case blue, red
-    
+
     var displayName: String {
         return rawValue.capitalized
     }
 }
 
 public struct Player {
-    struct Constants {
-        static let DefaultName = "Anonymous"
+    fileprivate struct Constants {
+        static let defaultNamePrefix = "Anonymous"
     }
-    
-    var name: String
+
+    var name = Constants.defaultNamePrefix
     var color: PlayerColor
-    
-    init(color: PlayerColor) {
-        self.init(color: color, name: Constants.DefaultName + " " + color.displayName)
-    }
-    
-    init(color: PlayerColor, name: String) {
+
+    init(color: PlayerColor, name: String? = nil) {
         self.color = color
-        self.name = name
+        self.name = name ?? defaultName
     }
 }
 
 extension Player {
-    static var defaultName: String {
-        return Constants.DefaultName
+    var defaultName: String {
+        return Constants.defaultNamePrefix + " " + color.displayName
     }
-    
+
     var displayName: String {
-        return name.contains(Player.defaultName) ? "" : name
+        return name.contains(Constants.defaultNamePrefix) ? "" : name
     }
 }

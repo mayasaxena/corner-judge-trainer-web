@@ -18,10 +18,9 @@ extension EventType {
             let value = value,
             let eventType = EventType(rawValue: value)
             else {
-                throw Abort.custom(
-                    status: .badRequest,
-                    message: "Event data must contain event type"
-                )
+                let message = "Event data must contain event type"
+                log(message)
+                throw Abort.custom(status: .badRequest, message: message)
             }
 
         self = eventType
@@ -35,11 +34,7 @@ protocol Event: NodeRepresentable {
 
 extension Event {
     var jsonString: String? {
-        do {
-            return try JSON(makeNode()).makeBytes().string()
-        } catch {
-            return nil
-        }
+        return try? JSON(makeNode()).makeBytes().string()
     }
 }
 
@@ -103,6 +98,16 @@ struct ScoringEvent: Event {
     }
 }
 
+extension ScoringEvent {
+    public var description: String {
+        return "[\(color.displayName) \(category.rawValue.capitalized)]"
+    }
+
+    public var isPenalty: Bool {
+        return category == .gamJeom || category == .kyongGo
+    }
+}
+
 extension ScoringEvent: Equatable {
     public static func ==(lhs: ScoringEvent, rhs: ScoringEvent) -> Bool {
         return  lhs.category == rhs.category &&
@@ -110,17 +115,14 @@ extension ScoringEvent: Equatable {
     }
 }
 
-extension ScoringEvent {
-    public var isPenalty: Bool {
-        return category == .gamJeom || category == .kyongGo
-    }
-}
-
 // MARK: - ControlEvent
 
 struct ControlEvent: Event {
     enum Category: String {
-        case playPause, addJudge, timer
+        case playPause
+        case addJudge
+        case timer
+        case endMatch
     }
 
     let eventType: EventType = .control

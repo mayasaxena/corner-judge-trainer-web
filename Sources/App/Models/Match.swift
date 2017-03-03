@@ -1,89 +1,149 @@
 //
 //  Match.swift
 //  corner-judge-trainer-web
+
 //
-//  Created by Maya Saxena on 10/1/16.
-//
+//  Created by Maya Saxena on 2/21/17.
+//  Copyright © 2017 Maya Saxena. All rights reserved.
 //
 
 import Vapor
 import Foundation
 
-public final class Match: MatchSessionDelegate {
+public enum MatchStatus: String {
+    case new, ongoing, completed
+}
 
-    var id: Int {
-        return properties.id
+public final class Match {
+
+    private struct Constants {
+        static let matchIDLength = 3
+        static let maxScore = 99.0
     }
 
-    private let properties = MatchProperties()
-    private let session = MatchSession()
+    public var status: MatchStatus = .new
 
-    private let matchTimer: MatchTimer
+    public let id: Int
+    public let date = Date()
 
-    init() {
-        matchTimer = MatchTimer(duration: 30)
-        matchTimer.action = { [weak self] in
-            guard
-                let welf = self,
-                let eventString = ControlEvent(category: .timer, judgeID: "timer").jsonString
-                else { return }
-            try welf.session.send(jsonString: eventString)
-        }
-        session.delegate = self
-    }
-
-    convenience init(redPlayerName: String, bluePlayerName: String) {
-        self.init()
-        properties.add(redPlayerName: redPlayerName, bluePlayerName: bluePlayerName)
-    }
-
-    public func makeNode() throws -> Node {
-        var nodeData = properties.nodeLiteral
-        nodeData[NodeKey.time] = Node(matchTimer.timeRemaining.formattedTimeString)
-        return try nodeData.makeNode()
-    }
-
-    func received(event: Event, from socket: WebSocket) throws {
-        switch event {
-        case let scoringEvent as ScoringEvent:
-            guard matchTimer.isRunning || scoringEvent.isPenalty else { return }
-            try session.received(event: scoringEvent)
-        case let controlEvent as ControlEvent:
-            switch controlEvent.category {
-            case .addJudge:
-                try session.addConnection(to: socket, forJudgeID: event.judgeID)
-            case .playPause:
-                toggleMatchTimer()
-            default:
-                break
-            }
-        default:
-            break
+    public var redScore: Double = 0 {
+        didSet {
+            redScore = min(redScore, Constants.maxScore)
         }
     }
 
-    func toggleMatchTimer() {
-        if matchTimer.isRunning {
-            matchTimer.stop()
+    public var redPenalties: Double = 0 {
+        didSet {
+            redPenalties = min(redPenalties, ruleSet.maxPenalties)
+        }
+    }
+
+    public var blueScore: Double = 0 {
+        didSet {
+            blueScore = min(blueScore, Constants.maxScore)
+        }
+    }
+
+    public var bluePenalties: Double = 0 {
+        didSet {
+            bluePenalties = min(bluePenalties, ruleSet.maxPenalties)
+        }
+    }
+
+    public var winningPlayer: Player?
+
+    fileprivate(set) var type: MatchType
+    fileprivate(set) var ruleSet = RuleSet.ectc
+
+    fileprivate(set) var redPlayer: Player
+    fileprivate(set) var bluePlayer: Player
+
+    init(
+        id: Int = Int.random(3),
+        redPlayerName: String? = nil,
+        bluePlayerName: String? = nil,
+        type: MatchType = .none
+    ) {
+        self.id = id
+        self.redPlayer = Player(color: .red, name: redPlayerName)
+        self.bluePlayer = Player(color: .blue, name: bluePlayerName)
+        self.type = type
+    }
+
+    public func determineWinner() {
+        if redScore == blueScore {
+            winningPlayer = nil
         } else {
-            matchTimer.start()
+            winningPlayer = redScore > blueScore ? redPlayer : bluePlayer
+        }
+    }
+}
+
+extension String {
+    var parsedDate: Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d/yyy h:mm a"
+        formatter.timeZone = TimeZone.current
+        return formatter.date(from: self)
+    }
+}
+
+// MARK: - MatchType
+
+public enum MatchType: Int {
+    case aTeam
+    case bTeam
+    case cTeam
+    case custom
+    case none
+
+    var displayName: String {
+        switch self {
+        case .aTeam:
+            return "A Team".uppercased()
+        case .bTeam:
+            return "B Team".uppercased()
+        case .cTeam:
+            return "C Team".uppercased()
+        case .custom:
+            return "Custom".uppercased()
+        case .none:
+            return "None".uppercased()
+        }
+    }
+}
+
+public enum RuleSet: Int {
+    case ectc, wtf
+
+    var maxPenalties: Double {
+        switch self {
+        case .ectc:
+            return 5.0
+        case .wtf:
+            return 10.0
         }
     }
 
-    // MARK: - MatchSessionDelegate
-
-    func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
-        properties.updateScore(scoringEvent: scoringEvent)
+    var pointGapValue: Double {
+        switch self {
+        case .ectc:
+            return 12.0
+        case .wtf:
+            return 20.0
+        }
     }
 }
 
-private extension TimeInterval {
-    var formattedTimeString: String {
-        return String(format: "%d:%02d", Int(self / 60.0),  Int(ceil(self.truncatingRemainder(dividingBy: 60))))
+extension Int {
+    static func random(_ length: Int = 3) -> Int {
+        return random(min: 10^^(length - 1), max: (10^^length) - 1)
     }
 }
 
-fileprivate struct NodeKey {
-    static let time = "time"
-    static let overlayClass = "overlay-display"
+precedencegroup PowerPrecedence { higherThan: MultiplicationPrecedence }
+infix operator ^^ : PowerPrecedence
+
+func ^^ (radix: Int, power: Int) -> Int {
+    return Int(pow(Double(radix), Double(power)))
 }

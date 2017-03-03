@@ -10,34 +10,42 @@ import Foundation
 import Dispatch
 
 final class MatchTimer {
-    private var timer: DispatchSourceTimer?
-    var timeRemaining: TimeInterval
+    private let queue = DispatchQueue(label: "timerQueue")
 
-    var action: (Void) throws -> Void = {}
+    private var timer: DispatchSourceTimer?
+    private var timeRemaining: TimeInterval
+
+    var action: (Void) -> Void = {}
 
     var isRunning: Bool {
         return timer != nil
+    }
+
+    var isDone: Bool {
+        return timeRemaining <= 0
+    }
+
+    var displayTime: String {
+        return timeRemaining.formattedTimeString
     }
 
     init(duration: TimeInterval) {
         self.timeRemaining = duration
     }
 
-    func start() {
-        let queue = DispatchQueue(label: "timerQueue")
+    func start(delay: TimeInterval = 0.1) {
         timer = DispatchSource.makeTimerSource(queue: queue)
-        timer?.scheduleRepeating(deadline: .now() + 0.1, interval: .seconds(1), leeway: .milliseconds(100))
+        timer?.scheduleRepeating(deadline: .now() + delay, interval: .seconds(1), leeway: .milliseconds(100))
 
         timer?.setEventHandler { [weak self] in
             guard let welf = self else { return }
+
             welf.timeRemaining -= 1
-            if welf.timeRemaining <= 0 {
+
+            welf.action()
+
+            if welf.timeRemaining < 1 {
                 welf.stop()
-            }
-            do {
-                try welf.action()
-            } catch(let error) {
-                print("Timer action failed with error: \(error)")
             }
         }
 
@@ -52,5 +60,19 @@ final class MatchTimer {
     func reset(time: TimeInterval) {
         stop()
         timeRemaining = time
+    }
+
+    func toggle() {
+        if isRunning {
+            stop()
+        } else {
+            start()
+        }
+    }
+}
+
+private extension TimeInterval {
+    var formattedTimeString: String {
+        return String(format: "%d:%02d", Int(self / 60.0),  Int(ceil(self.truncatingRemainder(dividingBy: 60))))
     }
 }
