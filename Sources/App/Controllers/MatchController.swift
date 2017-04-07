@@ -68,7 +68,7 @@ public final class MatchController {
         ]
 
         for (red, blue) in playerNames {
-            let match = Match(redPlayerName: red, bluePlayerName: blue, type: .none)
+            let match = Match(redPlayerName: red, bluePlayerName: blue, type: .bTeam)
             matchManagers[match.id] = MatchManager(match: match)
         }
     }
@@ -77,7 +77,8 @@ public final class MatchController {
 
     public func handle(_ node: Node, matchID: Int, socket: WebSocket) throws {
         guard let manager = matchManagers[matchID] else { throw Abort.notFound }
-        try manager.received(event: try node.createEvent(), from: socket)
+        guard let event = node.createEvent() else { throw Abort.badRequest }
+        try manager.received(event: event, from: socket)
     }
 }
 

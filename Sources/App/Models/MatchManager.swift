@@ -33,6 +33,10 @@ public final class MatchManager: MatchSessionDelegate {
     private var isRestRound = false
     private var currentRoundDuration: TimeInterval = 0
 
+    private var scoringDisabled: Bool {
+        return !match.isWon && (!matchTimer.isRunning || isRestRound)
+    }
+
     init(match: Match = Match()) {
         self.match = match
 
@@ -46,7 +50,7 @@ public final class MatchManager: MatchSessionDelegate {
                 welf.handleEndOfRound()
             }
 
-            welf.sendTimerEvent()
+            welf.sendStatusEvent()
         }
         session.delegate = self
     }
@@ -63,7 +67,7 @@ public final class MatchManager: MatchSessionDelegate {
     public func makeNode() throws -> Node {
         var nodeData = match.nodeLiteral
         nodeData[NodeKey.time] = Node(matchTimer.displayTime)
-        nodeData[NodeKey.overlayVisible] = !match.isWon && (!matchTimer.isRunning || isRestRound)
+        nodeData[NodeKey.overlayVisible] = scoringDisabled
         nodeData[NodeKey.round] = round
         return try nodeData.makeNode()
     }
@@ -78,6 +82,7 @@ public final class MatchManager: MatchSessionDelegate {
         case let controlEvent as ControlEvent:
             if controlEvent.category == .addJudge {
                 try session.addConnection(to: socket, forJudgeID: event.judgeID)
+                sendStatusEvent()
             } else {
                 handleControlEvent(controlEvent)
             }
@@ -101,15 +106,20 @@ public final class MatchManager: MatchSessionDelegate {
 
             guard !matchTimer.isDone && !match.isWon else { break }
             matchTimer.toggle()
-            sendTimerEvent()
+            sendStatusEvent()
         default:
             break
         }
     }
 
-    private func sendTimerEvent() {
+    private func sendStatusEvent() {
         do {
-            try session.send(controlEvent: ControlEvent(category: .timer, judgeID: "timer"))
+            let statusEvent = ControlEvent.status(
+                time: matchTimer.displayTime,
+                scoringDisabled: scoringDisabled,
+                round: isRestRound ? nil : round
+            )
+            try session.send(controlEvent: statusEvent)
         } catch(let error) {
             log(error: error)
         }
@@ -216,6 +226,7 @@ private extension Match {
 
 fileprivate struct NodeKey {
     static let matchID = "match-id"
+    static let matchType = "match-type"
     static let date = "date"
     static let redName = "red-player"
     static let redScore = "red-score"
@@ -246,6 +257,7 @@ extension Match: NodeRepresentable {
     public var nodeLiteral: [String : NodeRepresentable] {
         return [
             NodeKey.matchID : id,
+            NodeKey.matchType : type.rawValue,
             NodeKey.date : date.timeStampString,
             NodeKey.redName : redPlayer.displayName.uppercased(),
             NodeKey.redScore : redScore.formattedString,

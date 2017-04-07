@@ -13,15 +13,13 @@ enum EventType: String {
 }
 
 extension EventType {
-    init(value: String?) throws {
+    init?(value: String?) {
         guard
             let value = value,
             let eventType = EventType(rawValue: value)
             else {
-                let message = "Event data must contain event type"
-                log(message)
-                throw Abort.custom(status: .badRequest, message: message)
-            }
+                return nil
+        }
 
         self = eventType
     }
@@ -30,11 +28,38 @@ extension EventType {
 protocol Event: NodeRepresentable {
     var eventType: EventType { get }
     var judgeID: String { get }
+    var data: [String : String] { get }
+
+    init?(node: Node)
+    init(judgeID: String, data: [String: String])
 }
 
 extension Event {
+    init?(node: Node) {
+        guard
+            let judgeID = node[JSONKey.judgeID]?.string,
+            let dataObject = node[JSONKey.data]?.nodeObject
+            else { return nil }
+
+        let data = dataObject.reduce([String : String]()) { dict, entry in
+            var dictionary = dict
+            dictionary[entry.key] = entry.value.string
+            return dictionary
+        }
+
+        self.init(judgeID: judgeID, data: data)
+    }
+
     var jsonString: String? {
         return try? JSON(makeNode()).makeBytes().string()
+    }
+
+    func makeNode(context: Context) throws -> Node {
+        return try Node(node: [
+            JSONKey.eventType : eventType.rawValue,
+            JSONKey.data : data.makeNode(),
+            JSONKey.judgeID : judgeID
+        ])
     }
 }
 
@@ -44,6 +69,9 @@ fileprivate struct JSONKey {
     static let data = "data"
     static let category = "category"
     static let color = "color"
+    static let time = "time"
+    static let scoringDisabled = "scoringDisabled"
+    static let round = "round"
 }
 
 // MARK: - ScoringEvent
@@ -55,46 +83,47 @@ struct ScoringEvent: Event {
         case technical
         case kyongGo = "kyong-go"
         case gamJeom = "gam-jeom"
+
+        var displayName: String {
+            return rawValue.capitalized
+        }
     }
 
     let eventType: EventType = .scoring
     let judgeID: String
+    let data: [String : String]
 
-    let color: PlayerColor
-    let category: Category
-
-    init(node: Node) throws {
+    var category: Category {
         guard
-            let judgeID = node[JSONKey.judgeID]?.string,
-            let dataObject = node[JSONKey.data]?.nodeObject,
-            let color = dataObject[JSONKey.color]?.string,
-            let category = dataObject[JSONKey.category]?.string
-            else { throw Abort.badRequest }
-
-        try self.init(color: color, category: category, judgeID: judgeID)
+            let categoryRaw = data[JSONKey.category],
+            let category = Category(rawValue: categoryRaw)
+            else { fatalError("Scoring event must contain category data") }
+        return category
     }
 
-    init(color: String, category: String, judgeID: String) throws {
+    var color: PlayerColor {
         guard
-            let playerColor = PlayerColor(rawValue: color),
-            let category = ScoringEvent.Category(rawValue: category)
-            else {
-                throw Abort.badRequest
-            }
+            let colorRaw = data[JSONKey.color],
+            let color = PlayerColor(rawValue: colorRaw)
+            else { fatalError("Scoring event must contain player color") }
+        return color
+    }
+
+    init(judgeID: String, data: [String : String]) {
         self.judgeID = judgeID
-        self.color = playerColor
-        self.category = category
+        self.data = data
+
+        if data[JSONKey.category] == nil {
+            fatalError("Event data must contain category data")
+        }
     }
 
-    func makeNode(context: Context) throws -> Node {
+    init(judgeID: String, category: Category, color: PlayerColor) {
         let data = [
-            JSONKey.color : color.rawValue,
-            JSONKey.category : category.rawValue
+            JSONKey.category : category.rawValue,
+            JSONKey.color : color.rawValue
         ]
-        return try Node(node: [
-            JSONKey.eventType : eventType.rawValue,
-            JSONKey.data : data.makeNode()
-        ])
+        self.init(judgeID: judgeID, data: data)
     }
 }
 
@@ -121,55 +150,66 @@ struct ControlEvent: Event {
     enum Category: String {
         case playPause
         case addJudge
-        case timer
+        case status
         case endMatch
     }
 
     let eventType: EventType = .control
     let judgeID: String
+    let data: [String : String]
 
-    let category: Category
-
-    init(node: Node) throws {
+    var category: Category {
         guard
-            let judgeID = node[JSONKey.judgeID]?.string,
-            let dataObject = node[JSONKey.data]?.nodeObject,
-            let categoryRaw = dataObject[JSONKey.category]?.string
-            else { throw Abort.badRequest }
+            let categoryRaw = data[JSONKey.category],
+            let category = Category(rawValue: categoryRaw)
+            else { fatalError("Control event must contain category data") }
+        return category
+    }
 
-        try self.init(category: categoryRaw, judgeID: judgeID)
+    init(judgeID: String, data: [String : String]) {
+        self.judgeID = judgeID
+        self.data = data
+
+        if data[JSONKey.category] == nil {
+            fatalError("Event data must contain category data")
+        }
     }
 
     init(category: Category, judgeID: String) {
-        self.category = category
-        self.judgeID = judgeID
-    }
-
-    init(category: String, judgeID: String) throws {
-        guard let category = ControlEvent.Category(rawValue: category) else {
-            throw Abort.badRequest
-        }
-        self.init(category: category, judgeID: judgeID)
-    }
-
-    func makeNode(context: Context) throws -> Node {
-        let data = [ JSONKey.category : category.rawValue ]
-        return try Node(node: [
-            JSONKey.eventType : eventType.rawValue,
-            JSONKey.data : data.makeNode()
-        ])
+        let data = [JSONKey.category : category.rawValue ]
+        self.init(judgeID: judgeID, data: data)
     }
 }
 
 extension Node {
-    func createEvent() throws -> Event {
-        let eventType = try EventType(value: self["event"]?.string)
+    func createEvent() -> Event? {
+        guard let eventType = EventType(value: self[JSONKey.eventType]?.string) else { return nil }
 
         switch eventType {
         case .scoring:
-            return try ScoringEvent(node: node)
+            return ScoringEvent(node: node)
         case .control:
-            return try ControlEvent(node: node)
+            return ControlEvent(node: node)
         }
+    }
+}
+
+// MARK: - Timer Events
+
+extension ControlEvent {
+    static let statusJudgeID = "status"
+
+    static func status(time: String, scoringDisabled: Bool, round: Int?) -> ControlEvent {
+        var data = [
+            JSONKey.category : ControlEvent.Category.status.rawValue,
+            JSONKey.time : time,
+            JSONKey.scoringDisabled : String(scoringDisabled)
+        ]
+
+        if let round = round {
+            data[JSONKey.round] = String(round)
+        }
+
+        return ControlEvent(judgeID: statusJudgeID, data: data)
     }
 }
