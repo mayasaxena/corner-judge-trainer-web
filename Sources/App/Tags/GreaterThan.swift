@@ -9,31 +9,23 @@
 import Leaf
 import Foundation
 
-class GreaterThan: BasicTag {
+class GreaterThan: Tag {
     enum Error: Swift.Error {
         case expectedTwoArguments
     }
 
     let name = "greaterThan"
 
-    public func run(arguments: [Argument]) throws -> Node? {
+    func run(tagTemplate: TagTemplate, arguments: ArgumentList) throws -> Node? {
         guard arguments.count == 2 else { throw Error.expectedTwoArguments }
         return nil
     }
 
-    public func shouldRender(
-        stem: Stem,
-        context: Context,
-        tagTemplate: TagTemplate,
-        arguments: [Argument],
-        value: Node?
-        ) -> Bool {
+    func shouldRender(tagTemplate: TagTemplate, arguments: ArgumentList, value: Node?) -> Bool {
         guard
-            let variable = arguments.first?.value?.int,
-            let value = arguments.last?.value?.int
-            else {
-                return false
-        }
+            let variable = arguments.first?.int,
+            let value = arguments.last?.int
+            else { return false }
         return variable > value
     }
 }

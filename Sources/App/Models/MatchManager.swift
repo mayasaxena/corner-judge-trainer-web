@@ -69,12 +69,11 @@ public final class MatchManager: MatchSessionDelegate {
         nodeData[NodeKey.time] = Node(matchTimer.displayTime)
         nodeData[NodeKey.overlayVisible] = scoringDisabled
         nodeData[NodeKey.round] = round
-        return try nodeData.makeNode()
+        return try nodeData.makeNode(in: nil)
     }
 
     func received(event: Event, from socket: WebSocket) throws {
         switch event {
-
         case let scoringEvent as ScoringEvent:
             guard shouldScore(event: scoringEvent) else { return }
             try session.received(event: scoringEvent)
@@ -245,13 +244,12 @@ fileprivate struct NodeKey {
 }
 
 extension Match: NodeRepresentable {
-
-    public func makeNode(context: Context) throws -> Node {
+    public func makeNode(in context: Context?) throws -> Node {
         return try Node(node: nodeLiteral)
     }
 
     public func makeJSON() throws -> JSON {
-        return try JSON(makeNode())
+        return try JSON(makeNode(in: nil))
     }
 
     public var nodeLiteral: [String : NodeRepresentable] {

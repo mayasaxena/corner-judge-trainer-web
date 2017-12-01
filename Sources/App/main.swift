@@ -1,35 +1,41 @@
+import Foundation
 import Vapor
-import Leaf
+import LeafProvider
 
 let DEBUG = false
 let MOCKING = true
 
-let drop = Droplet()
+let config = try Config()
+try config.addProvider(LeafProvider.Provider.self)
 
-if let leaf = drop.view as? LeafRenderer {
+let droplet = try Droplet(config)
+
+if let leaf = droplet.view as? LeafRenderer {
     leaf.stem.register(GreaterThan())
     leaf.stem.register(Repeat())
 }
 
-let matchController = MatchController(droplet: drop)
+let matchController = MatchController(droplet: droplet)
 
-drop.get(handler: matchController.index)
-drop.resource("match", matchController)
+droplet.get(handler: matchController.index)
+droplet.resource("match", matchController)
 
-drop.socket("match-ws", Int.self) { request, socket, matchID in
+droplet.socket("match-ws", Int.parameter) { request, socket in
+    background {
+        while socket.state == .open {
+            try? socket.ping()
+            droplet.console.wait(seconds: 10) // every 10 seconds
+        }
+    }
+
+    let matchID = try request.parameters.next(Int.self)
+
     socket.onText = { socket, text in
         log(fromSocket: text)
 
-        try background {
-            while socket.state == .open {
-                try? socket.ping()
-                drop.console.wait(seconds: 10) // ping every 10 seconds to keep open
-            }
-        }
-
-        let node = try JSON(bytes: Array(text.utf8)).node
-        try matchController.handle(node, matchID: matchID, socket: socket)
+        let json = try JSON(bytes: Array(text.utf8))
+        try matchController.handle(json, matchID: matchID, socket: socket)
     }
 }
 
-drop.run()
+try droplet.run()

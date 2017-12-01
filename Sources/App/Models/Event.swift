@@ -25,12 +25,11 @@ extension EventType {
     }
 }
 
-protocol Event: NodeRepresentable {
+protocol Event: JSONConvertible {
     var eventType: EventType { get }
     var judgeID: String { get }
     var data: [String : String] { get }
 
-    init?(node: Node)
     init(judgeID: String, data: [String: String])
 }
 
@@ -38,7 +37,7 @@ extension Event {
     init?(node: Node) {
         guard
             let judgeID = node[JSONKey.judgeID]?.string,
-            let dataObject = node[JSONKey.data]?.nodeObject
+            let dataObject = node[JSONKey.data]?.pathIndexableObject
             else { return nil }
 
         let data = dataObject.reduce([String : String]()) { dict, entry in
@@ -51,16 +50,28 @@ extension Event {
     }
 
     var jsonString: String? {
-        return try? JSON(makeNode()).makeBytes().string()
+        return try? makeJSON().makeBytes().makeString()
     }
 
-    func makeNode(context: Context) throws -> Node {
-        return try Node(node: [
-            JSONKey.eventType : eventType.rawValue,
-            JSONKey.data : data.makeNode(),
-            JSONKey.judgeID : judgeID
-        ])
+    init(json: JSON) throws {
+        try self.init(judgeID: json.get(JSONKey.judgeID), data: json.get(JSONKey.data))
     }
+
+    func makeJSON() throws -> JSON {
+        var json = JSON()
+        try json.set(JSONKey.eventType, eventType.rawValue)
+        try json.set(JSONKey.data, data)
+        try json.set(JSONKey.judgeID, judgeID)
+        return json
+    }
+
+//    func makeNode(in context: Context?) throws -> Node {
+//        return try Node(node: [
+//            JSONKey.eventType : eventType.rawValue,
+//            JSONKey.data : data.makeNode(),
+//            JSONKey.judgeID : judgeID
+//        ])
+//    }
 }
 
 fileprivate struct JSONKey {
@@ -181,15 +192,15 @@ struct ControlEvent: Event {
     }
 }
 
-extension Node {
+extension JSON {
     func createEvent() -> Event? {
         guard let eventType = EventType(value: self[JSONKey.eventType]?.string) else { return nil }
 
         switch eventType {
         case .scoring:
-            return ScoringEvent(node: node)
+            return try? ScoringEvent(json: self)
         case .control:
-            return ControlEvent(node: node)
+            return try? ControlEvent(json: self)
         }
     }
 }

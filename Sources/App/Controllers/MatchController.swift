@@ -28,7 +28,7 @@ public final class MatchController {
 
         let matchNodes = try matchManagers.values
             .filter { $0.match.status != .completed }
-            .map { try $0.match.makeNode() }
+            .map { try $0.match.makeNode(in: nil) }
 
         let context = [
             "matches" : Node.array(matchNodes),
@@ -75,9 +75,9 @@ public final class MatchController {
 
     // MARK: - Event Handling
 
-    public func handle(_ node: Node, matchID: Int, socket: WebSocket) throws {
+    public func handle(_ json: JSON, matchID: Int, socket: WebSocket) throws {
         guard let manager = matchManagers[matchID] else { throw Abort.notFound }
-        guard let event = node.createEvent() else { throw Abort.badRequest }
+        guard let event = json.createEvent() else { throw Abort.badRequest }
         try manager.received(event: event, from: socket)
     }
 }
@@ -86,9 +86,9 @@ extension MatchController: ResourceRepresentable {
     public func makeResource() -> Resource<Int> {
         return Resource(
             index: index,
-            store: create,
+            create: create,
             show: show,
-            modify: edit
+            edit: edit
         )
     }
 }

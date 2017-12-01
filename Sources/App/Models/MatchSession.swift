@@ -37,7 +37,7 @@ public final class MatchSession {
         guard let json = jsonString else {
             let message = "Could not convert event to JSON"
             log(message)
-            throw Abort.custom(status: .badRequest, message: message)
+            throw Abort(.badRequest, reason: message)
         }
 
         for (_, socket) in connections {
@@ -63,7 +63,7 @@ public final class MatchSession {
             }
         } else {
             receivedEventInfo = (event: event, count: 1)
-            drop.console.wait(seconds: Constants.confirmationInterval)
+            droplet.console.wait(seconds: Constants.confirmationInterval)
             try confirmScoringEvent()
         }
     }

@@ -10,21 +10,15 @@ import Leaf
 import Foundation
 
 class Repeat: Tag {
-
     enum Error: Swift.Error {
         case expectedOneArgument
     }
 
     let name = "repeat"
 
-    func run(
-        stem: Stem,
-        context: Context,
-        tagTemplate: TagTemplate,
-        arguments: [Argument]
-        ) throws -> Node? {
+    func run(tagTemplate: TagTemplate, arguments: ArgumentList) throws -> Node? {
         guard arguments.count == 1 else { throw Error.expectedOneArgument }
-        return arguments[0].value
+        return arguments.first
     }
 
     func render(
