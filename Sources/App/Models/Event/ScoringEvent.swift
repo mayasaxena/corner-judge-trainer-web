@@ -14,10 +14,20 @@ struct ScoringEvent: Event {
         case body
         case head
         case technical
-        case gamJeom = "gam-jeom"
 
         var displayName: String {
             return rawValue.capitalized
+        }
+
+        var pointValue: Int {
+            switch self {
+            case .body:
+                return 2
+            case .head:
+                return 3
+            case .technical:
+                return 1
+            }
         }
     }
 
@@ -62,10 +72,6 @@ struct ScoringEvent: Event {
 extension ScoringEvent {
     public var description: String {
         return "[\(color.displayName) \(category.rawValue.capitalized)]"
-    }
-
-    public var isPenalty: Bool {
-        return category == .gamJeom
     }
 }
 

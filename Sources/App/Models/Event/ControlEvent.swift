@@ -13,6 +13,9 @@ struct ControlEvent: Event {
         case playPause
         case status
         case endMatch
+        case giveGamJeom
+        case removeGamJeom
+        case adjustScore
     }
 
     let eventType: EventType = .control
@@ -27,6 +30,19 @@ struct ControlEvent: Event {
         return category
     }
 
+    var color: PlayerColor? {
+        guard
+            let colorRaw = data[JSONKey.color],
+            let color = PlayerColor(rawValue: colorRaw)
+            else { return nil }
+        return color
+    }
+
+    var value: Int? {
+        guard let valueString = data[JSONKey.value] else { return nil }
+        return Double(valueString)?.toInt
+    }
+
     init(judgeID: String, data: [String : String]) {
         self.judgeID = judgeID
         self.data = data
@@ -37,7 +53,7 @@ struct ControlEvent: Event {
     }
 
     init(category: Category, judgeID: String) {
-        let data = [JSONKey.category : category.rawValue ]
+        let data = [JSONKey.category : category.rawValue]
         self.init(judgeID: judgeID, data: data)
     }
 }
@@ -74,5 +90,11 @@ extension ControlEvent {
         }
 
         return ControlEvent(judgeID: statusJudgeID, data: data)
+    }
+}
+
+private extension Double {
+    var toInt: Int? {
+        return Int(self)
     }
 }

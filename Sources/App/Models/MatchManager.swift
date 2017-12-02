@@ -79,23 +79,46 @@ public final class MatchManager: MatchSessionDelegate {
             try session.received(event: scoringEvent)
 
         case let controlEvent as ControlEvent:
-            switch controlEvent.category {
-            case .playPause:
-                if match.status == .new {
-                    match.status = .ongoing
-                }
-
-                guard !matchTimer.isDone && !match.isWon else { break }
-                matchTimer.toggle()
-                sendStatusEvent()
-            default:
-                break
-            }
+            handleControlEvent(controlEvent)
         case let newJudgeEvent as NewJudgeEvent:
             connect(judgeID: newJudgeEvent.judgeID, socket: socket)
         default:
             break
         }
+    }
+
+    func handleControlEvent(_ event: ControlEvent) {
+        switch event.category {
+        case .playPause:
+            if match.status == .new {
+                match.status = .ongoing
+            }
+            guard !matchTimer.isDone && !match.isWon else { break }
+            matchTimer.toggle()
+            sendStatusEvent()
+        case .giveGamJeom:
+            guard let color = event.color else { return }
+            match.giveGamJeom(to: color)
+            updateMatchStatus(for: event)
+        case .removeGamJeom:
+            guard let color = event.color else { return }
+            match.removeGamJeom(from: color)
+            updateMatchStatus(for: event)
+        case .adjustScore:
+            guard
+                let color = event.color,
+                let amount = event.value
+                else { return }
+            match.adjustScore(for: color, byAmount: amount)
+            updateMatchStatus(for: event)
+        default:
+            break
+        }
+    }
+
+    func updateMatchStatus(for event: ControlEvent) {
+        try? session.send(controlEvent: event)
+        checkMatchStatus()
     }
 
     func connect(judgeID: String, socket: WebSocket) {
@@ -108,7 +131,7 @@ public final class MatchManager: MatchSessionDelegate {
     }
 
     private func shouldScore(event: ScoringEvent) -> Bool {
-        return  !match.isWon && (event.isPenalty || (matchTimer.isRunning && !isRestRound))
+        return  !match.isWon && matchTimer.isRunning && !isRestRound
     }
 
     private func sendStatusEvent() {
@@ -158,30 +181,16 @@ public final class MatchManager: MatchSessionDelegate {
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
         guard match.winningPlayer == nil else { return }
 
-        var playerScore = 0
-        var playerPenalties = 0
-
-        switch scoringEvent.category {
-        case .head:
-            playerScore = 3
-        case .body:
-            playerScore = 2
-        case .technical:
-            playerScore = 1
-        case .gamJeom:
-            playerPenalties = 1
-        }
-
         if scoringEvent.color == .blue {
-            match.blueScore += playerScore
-            match.bluePenalties += playerPenalties
-            match.redScore += playerPenalties
+            match.blueScore += scoringEvent.category.pointValue
         } else {
-            match.redScore += playerScore
-            match.redPenalties += playerPenalties
-            match.blueScore += playerPenalties
+            match.redScore += scoringEvent.category.pointValue
         }
 
+        checkMatchStatus()
+    }
+
+    func checkMatchStatus() {
         match.checkPenalties()
         if round >= Match.pointGapThresholdRound {
             match.checkPointGap()
@@ -197,6 +206,43 @@ private extension Match {
 
     var isWon: Bool {
         return winningPlayer != nil
+    }
+
+    func giveGamJeom(to color: PlayerColor) {
+        switch color {
+        case .blue:
+            bluePenalties += 1
+            redScore += 1
+        case .red:
+            redPenalties += 1
+            blueScore += 1
+        }
+    }
+
+    func removeGamJeom(from color: PlayerColor) {
+        switch color {
+        case .blue:
+            guard bluePenalties > 0 else { return }
+            bluePenalties -= 1
+            redScore -= 1
+        case .red:
+            guard redPenalties > 0 else { return }
+            redPenalties -= 1
+            blueScore -= 1
+        }
+    }
+
+    func adjustScore(for color: PlayerColor, byAmount amount: Int) {
+        switch color {
+        case .blue:
+            if blueScore + amount >= 0 {
+                blueScore += amount
+            }
+        case .red:
+            if redScore + amount >= 0 {
+                redScore += amount
+            }
+        }
     }
 
     func checkPointGap() {

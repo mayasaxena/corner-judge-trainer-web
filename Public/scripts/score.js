@@ -47,6 +47,28 @@ function Scoring(host) {
         })
     }
 
+    scoring.giveGamJeom = function(color) {
+        server.trigger("control", {
+            "category" : "giveGamJeom",
+            "color" : color
+        })
+    }
+
+    scoring.removeGamJeom = function(color) {
+        server.trigger("control", {
+            "category" : "removeGamJeom",
+            "color" : color
+        })
+    }
+
+    scoring.adjustScore = function(color, value) {
+        server.trigger("control", {
+            "category" : "adjustScore",
+            "color" : color,
+            "value" : value
+        })
+    }
+
     scoring.send = function(category, color) {
         server.trigger("scoring", {
             "category" : category,
@@ -60,9 +82,13 @@ function Scoring(host) {
         var category = classList[1]
         console.log("click")
         if (color == "red" || color == "blue") {
-            if (category == "gam-jeom") {
-                if (confirm("Give " + category + " to " + color + "?")) {
-                    scoring.send(category, color)
+            if (category == "give-gam-jeom") {
+                if (confirm("Give gam-jeom to " + color + "?")) {
+                    scoring.giveGamJeom(color)
+                }
+            } else if (category == "remove-gam-jeom") {
+                if (confirm("Remove gam-jeom from " + color + "?")) {
+                    scoring.removeGamJeom(color)
                 }
             } else {
                 var point = $(this).data('value');
@@ -70,8 +96,8 @@ function Scoring(host) {
                 if (point > 1) {
                     text += "s"
                 }
-                if (confirm("Remove " + text + " from " + color + "?")) {
-                    // scoring.send(category, color)
+                if (confirm(text + " to " + color + "?")) {
+                    scoring.adjustScore(color, point)
                 }
             }
         }
@@ -89,11 +115,11 @@ function Scoring(host) {
 
     server.bind("control", function(event) {
         console.log(event)
-        if (event.category != undefined && event.category == "endMatch") {
-            $('.scoring').load(document.URL +  ' .scoring > *');
-        } else {
+        if (event.category != undefined && event.category == "status") {
             $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
             $(".match-info").load(document.URL + " .match-info > *")
+        } else {
+            $('.scoring').load(document.URL +  ' .scoring > *');
         }
     })
 };

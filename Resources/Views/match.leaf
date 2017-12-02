@@ -19,8 +19,9 @@
 		#if(overlay-visible) {
 			<div class="overlay">
 				<div class="red">
-                    <div class="red remove button" data-value="1">-1</div>
-					<div class="red gam-jeom button">GAM-JEOM</div>
+                    <div class="red adjust button" data-value=-1>-1</div>
+					<div class="red give-gam-jeom button">GAM-JEOM</div>
+					<div class="red remove-gam-jeom button">REMOVE GAM-JEOM</div>
 				</div>
 
 				<div class="blue">

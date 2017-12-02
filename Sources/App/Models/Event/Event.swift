@@ -17,6 +17,7 @@ struct JSONKey {
     static let time = "time"
     static let scoringDisabled = "scoringDisabled"
     static let round = "round"
+    static let value = "value"
 }
 
 enum EventType: String {

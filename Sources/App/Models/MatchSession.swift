@@ -29,11 +29,9 @@ public final class MatchSession {
     }
 
     func removeConnection(socket: WebSocket) {
-        print(connections.count)
         if let removedKey = connections.filter ({ $0.value === socket }).first?.key {
             connections.removeValue(forKey: removedKey)
         }
-        print(connections.count)
     }
 
     func send(controlEvent: ControlEvent) throws {
@@ -55,14 +53,6 @@ public final class MatchSession {
 
     // TODO: Refactor to allow events other than first received to be confirmed
     func received(event: ScoringEvent) throws {
-
-        guard !event.isPenalty else {
-            log("\(event.description) given by \(event.judgeID)")
-            delegate?.sessionDidConfirmScoringEvent(scoringEvent: event)
-            try send(jsonString: event.jsonString)
-            return
-        }
-
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
                 receivedEventInfo?.count += 1
