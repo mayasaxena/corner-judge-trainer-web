@@ -16,9 +16,13 @@ public enum MatchStatus: String {
 
 public final class Match {
 
+    public static let pointGapThresholdRound = 2
+    public static let pointGapValue = 20
+    public static let maxPenalties = 10
+
     private struct Constants {
         static let matchIDLength = 3
-        static let maxScore = 99.0
+        static let maxScore = 99
     }
 
     public var status: MatchStatus = .new
@@ -26,34 +30,33 @@ public final class Match {
     public let id: Int
     public let date = Date()
 
-    public var redScore: Double = 0 {
+    public var redScore: Int = 0 {
         didSet {
             redScore = min(redScore, Constants.maxScore)
         }
     }
 
-    public var redPenalties: Double = 0 {
+    public var redPenalties: Int = 0 {
         didSet {
-            redPenalties = min(redPenalties, ruleSet.maxPenalties)
+            redPenalties = min(redPenalties, Match.maxPenalties)
         }
     }
 
-    public var blueScore: Double = 0 {
+    public var blueScore: Int = 0 {
         didSet {
             blueScore = min(blueScore, Constants.maxScore)
         }
     }
 
-    public var bluePenalties: Double = 0 {
+    public var bluePenalties: Int = 0 {
         didSet {
-            bluePenalties = min(bluePenalties, ruleSet.maxPenalties)
+            bluePenalties = min(bluePenalties, Match.maxPenalties)
         }
     }
 
     public var winningPlayer: Player?
 
     fileprivate(set) var type: MatchType
-    fileprivate(set) var ruleSet = RuleSet.ectc
 
     fileprivate(set) var redPlayer: Player
     fileprivate(set) var bluePlayer: Player
@@ -109,28 +112,6 @@ public enum MatchType: Int {
             return "Custom".uppercased()
         case .none:
             return "None".uppercased()
-        }
-    }
-}
-
-public enum RuleSet: Int {
-    case ectc, wtf
-
-    var maxPenalties: Double {
-        switch self {
-        case .ectc:
-            return 5.0
-        case .wtf:
-            return 10.0
-        }
-    }
-
-    var pointGapValue: Double {
-        switch self {
-        case .ectc:
-            return 12.0
-        case .wtf:
-            return 20.0
         }
     }
 }

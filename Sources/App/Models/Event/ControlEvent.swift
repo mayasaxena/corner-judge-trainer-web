@@ -11,7 +11,6 @@ import JSON
 struct ControlEvent: Event {
     enum Category: String {
         case playPause
-        case addJudge
         case status
         case endMatch
     }
@@ -52,6 +51,8 @@ extension JSON {
             return try? ScoringEvent(json: self)
         case .control:
             return try? ControlEvent(json: self)
+        case .newJudge:
+            return try? NewJudgeEvent(json: self)
         }
     }
 }

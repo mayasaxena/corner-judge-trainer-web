@@ -136,15 +136,11 @@ html {
     flex-shrink: 0.5;
 }
 
-.penalty .kyong-go, .penalty .gam-jeom {
+.penalty .gam-jeom {
     height: 5vh;
     width: 5vh;
     border-radius: 2.5vw;
     margin: auto;
-}
-
-.penalty .kyong-go {
-    background-color: #FFD046;
 }
 
 .penalty .gam-jeom {

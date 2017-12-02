@@ -59,11 +59,20 @@ function Scoring(host) {
         var color = classList[0]
         var category = classList[1]
         console.log("click")
-        if ((color == "red" || color == "blue") &&
-            (category == "kyong-go" || category == "gam-jeom")) {
-
-            if (confirm("Give " + category + " to " + color + "?")) {
-                scoring.send(category, color)
+        if (color == "red" || color == "blue") {
+            if (category == "gam-jeom") {
+                if (confirm("Give " + category + " to " + color + "?")) {
+                    scoring.send(category, color)
+                }
+            } else {
+                var point = $(this).data('value');
+                var text = point + " point"
+                if (point > 1) {
+                    text += "s"
+                }
+                if (confirm("Remove " + text + " from " + color + "?")) {
+                    // scoring.send(category, color)
+                }
             }
         }
     });
@@ -71,9 +80,7 @@ function Scoring(host) {
     // BINDINGS
 
     server.bind("open", function() {
-        server.trigger("control", {
-            "category" : "addJudge"
-        })
+        server.trigger("newJudge", {})
     })
 
     server.bind("scoring", function(event) {

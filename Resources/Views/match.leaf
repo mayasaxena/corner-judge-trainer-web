@@ -19,12 +19,11 @@
 		#if(overlay-visible) {
 			<div class="overlay">
 				<div class="red">
-					<div class="red kyong-go button">KYONG-GO</div>
+                    <div class="red remove button" data-value="1">-1</div>
 					<div class="red gam-jeom button">GAM-JEOM</div>
 				</div>
 
 				<div class="blue">
-					<div class="blue kyong-go button">KYONG-GO</div>
 					<div class="blue gam-jeom button">GAM-JEOM</div>
 				</div>
 			</div>
@@ -49,22 +48,12 @@
 							<div class="gam-jeom"></div>
 						</div>
 					}
-					#repeat(red-kyonggo-count) {
-						<div class="penalty">
-							<div class="kyong-go"></div>
-						</div>
-					}
 				</div>
 
 				<div id="blue-penalty">
 					#repeat(blue-gamjeom-count) {
 						<div class="penalty">
 							<div class="gam-jeom"></div>
-						</div>
-					}
-					#repeat(blue-kyonggo-count) {
-						<div class="penalty">
-							<div class="kyong-go"></div>
 						</div>
 					}
 				</div>

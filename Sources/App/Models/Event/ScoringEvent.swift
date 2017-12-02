@@ -14,7 +14,6 @@ struct ScoringEvent: Event {
         case body
         case head
         case technical
-        case kyongGo = "kyong-go"
         case gamJeom = "gam-jeom"
 
         var displayName: String {
@@ -66,7 +65,7 @@ extension ScoringEvent {
     }
 
     public var isPenalty: Bool {
-        return category == .gamJeom || category == .kyongGo
+        return category == .gamJeom
     }
 }
 

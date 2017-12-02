@@ -80,9 +80,6 @@ public final class MatchManager: MatchSessionDelegate {
 
         case let controlEvent as ControlEvent:
             switch controlEvent.category {
-            case .addJudge:
-                session.addConnection(judgeID: event.judgeID, socket: socket)
-                sendStatusEvent()
             case .playPause:
                 if match.status == .new {
                     match.status = .ongoing
@@ -94,9 +91,16 @@ public final class MatchManager: MatchSessionDelegate {
             default:
                 break
             }
+        case let newJudgeEvent as NewJudgeEvent:
+            connect(judgeID: newJudgeEvent.judgeID, socket: socket)
         default:
             break
         }
+    }
+
+    func connect(judgeID: String, socket: WebSocket) {
+        session.addConnection(judgeID: judgeID, socket: socket)
+        sendStatusEvent()
     }
 
     func disconnect(socket: WebSocket) {
@@ -154,23 +158,16 @@ public final class MatchManager: MatchSessionDelegate {
     func sessionDidConfirmScoringEvent(scoringEvent: ScoringEvent) {
         guard match.winningPlayer == nil else { return }
 
-        var playerScore = 0.0
-        var playerPenalties = 0.0
+        var playerScore = 0
+        var playerPenalties = 0
 
         switch scoringEvent.category {
-
         case .head:
             playerScore = 3
-
         case .body:
-            playerScore = 1
-
+            playerScore = 2
         case .technical:
             playerScore = 1
-
-        case .kyongGo:
-            playerPenalties = 0.5
-
         case .gamJeom:
             playerPenalties = 1
         }
@@ -186,7 +183,7 @@ public final class MatchManager: MatchSessionDelegate {
         }
 
         match.checkPenalties()
-        if round > match.type.pointGapThresholdRound {
+        if round >= Match.pointGapThresholdRound {
             match.checkPointGap()
         }
 
@@ -203,17 +200,17 @@ private extension Match {
     }
 
     func checkPointGap() {
-        if redScore - blueScore >= ruleSet.pointGapValue {
+        if redScore - blueScore >= Match.pointGapValue {
             winningPlayer = redPlayer
-        } else if blueScore - redScore >= ruleSet.pointGapValue {
+        } else if blueScore - redScore >= Match.pointGapValue {
             winningPlayer = bluePlayer
         }
     }
 
     func checkPenalties() {
-        if redPenalties >= ruleSet.maxPenalties {
+        if redPenalties >= Match.maxPenalties {
             winningPlayer = bluePlayer
-        } else if bluePenalties >= ruleSet.maxPenalties {
+        } else if bluePenalties >= Match.maxPenalties {
             winningPlayer = redPlayer
         }
     }
@@ -226,11 +223,9 @@ fileprivate struct NodeKey {
     static let redName = "red-player"
     static let redScore = "red-score"
     static let redGamJeomCount = "red-gamjeom-count"
-    static let redKyongGoCount = "red-kyonggo-count"
     static let blueName = "blue-player"
     static let blueScore = "blue-score"
     static let blueGamJeomCount = "blue-gamjeom-count"
-    static let blueKyongGoCount = "blue-kyonggo-count"
     static let round = "round"
     static let blueScoreClass = "blue-score-class"
     static let redScoreClass = "red-score-class"
@@ -254,14 +249,12 @@ extension Match: NodeRepresentable {
             NodeKey.matchType : type.rawValue,
             NodeKey.date : date.timeStampString,
             NodeKey.redName : redPlayer.displayName.uppercased(),
-            NodeKey.redScore : redScore.formattedString,
-            NodeKey.redGamJeomCount : Int(redPenalties),
-            NodeKey.redKyongGoCount : (redPenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.redScore : String(redScore),
+            NodeKey.redGamJeomCount : redPenalties,
             NodeKey.redScoreClass : winningPlayer?.color == .red ? "blink" : "",
             NodeKey.blueName : bluePlayer.displayName.uppercased(),
-            NodeKey.blueScore : blueScore.formattedString,
-            NodeKey.blueGamJeomCount : Int(bluePenalties),
-            NodeKey.blueKyongGoCount : (bluePenalties.truncatingRemainder(dividingBy: 1)).rounded(),
+            NodeKey.blueScore : String(blueScore),
+            NodeKey.blueGamJeomCount : bluePenalties,
             NodeKey.blueScoreClass: winningPlayer?.color == .blue ? "blink" : "",
             NodeKey.status : status.rawValue
         ]
@@ -291,15 +284,6 @@ extension MatchType {
             return 2
         default:
             return 3
-        }
-    }
-
-    var pointGapThresholdRound: Int {
-        switch self {
-        case .aTeam, .bTeam, .cTeam, .none:
-            return 0
-        default:
-            return 0
         }
     }
 

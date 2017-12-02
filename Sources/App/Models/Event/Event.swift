@@ -20,7 +20,7 @@ struct JSONKey {
 }
 
 enum EventType: String {
-    case control, scoring
+    case control, scoring, newJudge
 }
 
 extension EventType {
@@ -47,21 +47,6 @@ protocol Event: JSONConvertible {
 
 extension Event {
 
-    init?(node: Node) {
-        guard
-            let judgeID = node[JSONKey.judgeID]?.string,
-            let dataObject = node[JSONKey.data]?.pathIndexableObject
-            else { return nil }
-
-        let data = dataObject.reduce([String : String]()) { dict, entry in
-            var dictionary = dict
-            dictionary[entry.key] = entry.value.string
-            return dictionary
-        }
-
-        self.init(judgeID: judgeID, data: data)
-    }
-
     var jsonString: String? {
         return try? makeJSON().makeBytes().makeString()
     }
@@ -77,4 +62,14 @@ extension Event {
         try json.set(JSONKey.judgeID, judgeID)
         return json
     }
+}
+
+struct NewJudgeEvent: Event {
+    init(judgeID: String, data: [String : String]) {
+        self.judgeID = judgeID
+    }
+    
+    let eventType = EventType.newJudge
+    var judgeID: String
+    let data: [String : String] = [:]
 }

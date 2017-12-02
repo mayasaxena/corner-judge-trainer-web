@@ -34,7 +34,6 @@ droplet.socket("match-ws", Int.parameter) { request, socket in
 
     socket.onText = { socket, text in
         log(fromSocket: text)
-
         let json = try JSON(bytes: Array(text.utf8))
         try matchController.handle(json, matchID: matchID, socket: socket)
     }

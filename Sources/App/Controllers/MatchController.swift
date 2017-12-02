@@ -97,9 +97,3 @@ extension MatchController: ResourceRepresentable {
         )
     }
 }
-
-extension Double {
-    var formattedString: String {
-        return String(Int(self))
-    }
-}
