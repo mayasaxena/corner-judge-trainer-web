@@ -80,6 +80,11 @@ public final class MatchController {
         guard let event = json.createEvent() else { throw Abort.badRequest }
         try manager.received(event: event, from: socket)
     }
+
+    public func handleDisconnect(matchID: Int, socket: WebSocket) throws {
+        guard let manager = matchManagers[matchID] else { throw Abort.notFound }
+        manager.disconnect(socket: socket)
+    }
 }
 
 extension MatchController: ResourceRepresentable {

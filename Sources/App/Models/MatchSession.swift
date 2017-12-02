@@ -24,8 +24,16 @@ public final class MatchSession {
 
     weak var delegate: MatchSessionDelegate?
 
-    func addConnection(to socket: WebSocket, forJudgeID judgeID: String) throws {
+    func addConnection(judgeID: String, socket: WebSocket) {
         connections[judgeID] = socket
+    }
+
+    func removeConnection(socket: WebSocket) {
+        print(connections.count)
+        if let removedKey = connections.filter ({ $0.value === socket }).first?.key {
+            connections.removeValue(forKey: removedKey)
+        }
+        print(connections.count)
     }
 
     func send(controlEvent: ControlEvent) throws {

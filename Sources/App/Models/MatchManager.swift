@@ -79,36 +79,32 @@ public final class MatchManager: MatchSessionDelegate {
             try session.received(event: scoringEvent)
 
         case let controlEvent as ControlEvent:
-            if controlEvent.category == .addJudge {
-                try session.addConnection(to: socket, forJudgeID: event.judgeID)
+            switch controlEvent.category {
+            case .addJudge:
+                session.addConnection(judgeID: event.judgeID, socket: socket)
                 sendStatusEvent()
-            } else {
-                handleControlEvent(controlEvent)
-            }
+            case .playPause:
+                if match.status == .new {
+                    match.status = .ongoing
+                }
 
+                guard !matchTimer.isDone && !match.isWon else { break }
+                matchTimer.toggle()
+                sendStatusEvent()
+            default:
+                break
+            }
         default:
             break
         }
+    }
+
+    func disconnect(socket: WebSocket) {
+        session.removeConnection(socket: socket)
     }
 
     private func shouldScore(event: ScoringEvent) -> Bool {
         return  !match.isWon && (event.isPenalty || (matchTimer.isRunning && !isRestRound))
-    }
-
-    private func handleControlEvent(_ event: ControlEvent) {
-        switch event.category {
-        case .playPause:
-
-            if match.status == .new {
-                match.status = .ongoing
-            }
-
-            guard !matchTimer.isDone && !match.isWon else { break }
-            matchTimer.toggle()
-            sendStatusEvent()
-        default:
-            break
-        }
     }
 
     private func sendStatusEvent() {

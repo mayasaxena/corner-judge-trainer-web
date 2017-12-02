@@ -15,7 +15,7 @@ final class MatchTimer {
     private var timer: DispatchSourceTimer?
     private var timeRemaining: TimeInterval
 
-    var action: (Void) -> Void = {}
+    var action: () -> Void = {}
 
     var isRunning: Bool {
         return timer != nil

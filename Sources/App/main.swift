@@ -1,6 +1,7 @@
 import Foundation
 import Vapor
 import LeafProvider
+import Sessions
 
 let DEBUG = false
 let MOCKING = true
@@ -21,6 +22,9 @@ droplet.get(handler: matchController.index)
 droplet.resource("match", matchController)
 
 droplet.socket("match-ws", Int.parameter) { request, socket in
+
+    let matchID = try request.parameters.next(Int.self)
+
     background {
         while socket.state == .open {
             try? socket.ping()
@@ -28,13 +32,15 @@ droplet.socket("match-ws", Int.parameter) { request, socket in
         }
     }
 
-    let matchID = try request.parameters.next(Int.self)
-
     socket.onText = { socket, text in
         log(fromSocket: text)
 
         let json = try JSON(bytes: Array(text.utf8))
         try matchController.handle(json, matchID: matchID, socket: socket)
+    }
+
+    socket.onClose = { socket, _, _, _ in
+        try matchController.handleDisconnect(matchID: matchID, socket: socket)
     }
 }
 
