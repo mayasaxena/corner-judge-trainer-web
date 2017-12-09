@@ -19,13 +19,35 @@
 		#if(overlay-visible) {
 			<div class="overlay">
 				<div class="red">
-                    <div class="red adjust button" data-value=-1>-1</div>
-					<div class="red give-gam-jeom button">GAM-JEOM</div>
-					<div class="red remove-gam-jeom button">REMOVE GAM-JEOM</div>
+                    <div class="top">
+                        <div class="red adjust button" data-value=1>+1</div>
+                        <div class="red adjust button" data-value=-1>-1</div>
+                        <div class="red adjust button" data-value=2>+2</div>
+                        <div class="red adjust button" data-value=-2>-2</div>
+                        <div class="red adjust button" data-value=3>+3</div>
+                        <div class="red adjust button" data-value=-3>-3</div>
+                    </div>
+
+                    <div class="bottom">
+                        <div class="red give-gam-jeom button">GAM-JEOM</div>
+                        <div class="red remove-gam-jeom button">REMOVE GAM-JEOM</div>
+                    </div>
 				</div>
 
 				<div class="blue">
-					<div class="blue gam-jeom button">GAM-JEOM</div>
+                    <div class="top">
+                        <div class="blue adjust button" data-value=1>+1</div>
+                        <div class="blue adjust button" data-value=-1>-1</div>
+                        <div class="blue adjust button" data-value=2>+2</div>
+                        <div class="blue adjust button" data-value=-2>-2</div>
+                        <div class="blue adjust button" data-value=3>+3</div>
+                        <div class="blue adjust button" data-value=-3>-3</div>
+                    </div>
+
+                    <div class="bottom">
+                        <div class="blue give-gam-jeom button">GAM-JEOM</div>
+                        <div class="blue remove-gam-jeom button">REMOVE GAM-JEOM</div>
+                    </div>
 				</div>
 			</div>
 		}

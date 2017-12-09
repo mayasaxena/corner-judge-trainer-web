@@ -77,7 +77,6 @@ public final class MatchManager: MatchSessionDelegate {
         case let scoringEvent as ScoringEvent:
             guard shouldScore(event: scoringEvent) else { return }
             try session.received(event: scoringEvent)
-
         case let controlEvent as ControlEvent:
             handleControlEvent(controlEvent)
         case let newJudgeEvent as NewJudgeEvent:
