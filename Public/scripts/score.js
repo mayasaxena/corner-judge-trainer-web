@@ -76,50 +76,56 @@ function Scoring(host) {
         })
     }
 
-    $(".overlay-wrapper").on("click", ".button", function() {
-        var classList = this.classList
-        var color = classList[0]
-        var category = classList[1]
-        console.log("click")
-        if (color == "red" || color == "blue") {
-            if (category == "give-gam-jeom") {
-                if (confirm("Give gam-jeom to " + color + "?")) {
-                    scoring.giveGamJeom(color)
-                }
-            } else if (category == "remove-gam-jeom") {
-                if (confirm("Remove gam-jeom from " + color + "?")) {
-                    scoring.removeGamJeom(color)
-                }
-            } else {
-                var point = $(this).data('value');
-                var text = point + " point"
-                if (point > 1) {
-                    text += "s"
-                }
-                if (confirm(text + " to " + color + "?")) {
-                    scoring.adjustScore(color, point)
-                }
-            }
-        }
-    });
+    // $(".overlay-wrapper").on("click", ".button", function() {
+    //     var classList = this.classList
+    //     var color = classList[0]
+    //     var category = classList[1]
+    //     console.log("click")
+    //     if (color == "red" || color == "blue") {
+    //         if (category == "give-gam-jeom") {
+    //             if (confirm("Give gam-jeom to " + color + "?")) {
+    //                 scoring.giveGamJeom(color)
+    //             }
+    //         } else if (category == "remove-gam-jeom") {
+    //             if (confirm("Remove gam-jeom from " + color + "?")) {
+    //                 scoring.removeGamJeom(color)
+    //             }
+    //         } else {
+    //             var point = $(this).data('value');
+    //             var text = point + " point"
+    //             if (point > 1) {
+    //                 text += "s"
+    //             }
+    //             if (confirm(text + " to " + color + "?")) {
+    //                 scoring.adjustScore(color, point)
+    //             }
+    //         }
+    //     }
+    // });
 
     // BINDINGS
 
     server.bind("open", function() {
-        server.trigger("newJudge", {})
+        server.trigger("newParticipant", {
+            "participant_type" : "operator"
+        })
     })
 
-    server.bind("scoring", function(event) {
-        $('.scoring').load(document.URL +  ' .scoring > *');
-    })
+    // server.bind("scoring", function(event) {
+    //     $('.scoring').load(document.URL +  ' .scoring > *');
+    // })
 
-    server.bind("control", function(event) {
-        console.log(event)
-        if (event.category != undefined && event.category == "status") {
-            $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
-            $(".match-info").load(document.URL + " .match-info > *")
+    server.bind("status", function(data) {
+        if (data.timer != undefined || data.round != undefined) {
+            // $(".match-info").load(document.URL + " .match-info > *")
+        }
+            console.log("timer update");
+            // $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
+        else if (data.score != undefined) {
+            // $('.scoring').load(document.URL +  ' .scoring > *');
+
+        }
         } else {
-            $('.scoring').load(document.URL +  ' .scoring > *');
         }
     })
 };

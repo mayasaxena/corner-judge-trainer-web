@@ -50,7 +50,7 @@ public final class MatchManager: MatchSessionDelegate {
                 welf.handleEndOfRound()
             }
 
-            welf.sendStatusEvent()
+            welf.sendTimerUpdate()
         }
         session.delegate = self
     }
@@ -79,8 +79,16 @@ public final class MatchManager: MatchSessionDelegate {
             try session.received(event: scoringEvent)
         case let controlEvent as ControlEvent:
             handleControlEvent(controlEvent)
-        case let newJudgeEvent as NewJudgeEvent:
-            connect(judgeID: newJudgeEvent.judgeID, socket: socket)
+        case let newParticipantEvent as NewParticipantEvent:
+            switch newParticipantEvent.participantType {
+            case .judge:
+                session.addJudge(judgeID: newParticipantEvent.participantID, socket: socket)
+            case .operator:
+                session.addConnection(participantID: newParticipantEvent.participantID, socket: socket)
+            default:
+                break
+            }
+            sendTimerUpdate()
         default:
             break
         }
@@ -94,35 +102,41 @@ public final class MatchManager: MatchSessionDelegate {
             }
             guard !matchTimer.isDone && !match.isWon else { break }
             matchTimer.toggle()
-            sendStatusEvent()
+            sendTimerUpdate()
         case .giveGamJeom:
             guard let color = event.color else { return }
             match.giveGamJeom(to: color)
-            updateMatchStatus(for: event)
+            sendStatusUpdate(for: event)
         case .removeGamJeom:
             guard let color = event.color else { return }
             match.removeGamJeom(from: color)
-            updateMatchStatus(for: event)
+            sendStatusUpdate(for: event)
         case .adjustScore:
             guard
                 let color = event.color,
                 let amount = event.value
                 else { return }
             match.adjustScore(for: color, byAmount: amount)
-            updateMatchStatus(for: event)
+            sendStatusUpdate(for: event)
         default:
             break
         }
     }
 
-    func updateMatchStatus(for event: ControlEvent) {
-        try? session.send(controlEvent: event)
+    func sendStatusUpdate(for event: ControlEvent) {
+        let statusUpdate: StatusUpdate?
+        switch event.category {
+        case .giveGamJeom, .removeGamJeom:
+            statusUpdate = .penalties(red: match.redPenalties, blue: match.bluePenalties)
+        case .adjustScore:
+            statusUpdate = .score(red: match.redScore, blue: match.blueScore)
+        default:
+            statusUpdate = nil
+        }
+        if let update = statusUpdate {
+            try? session.send(statusUpdate: update)
+        }
         checkMatchStatus()
-    }
-
-    func connect(judgeID: String, socket: WebSocket) {
-        session.addConnection(judgeID: judgeID, socket: socket)
-        sendStatusEvent()
     }
 
     func disconnect(socket: WebSocket) {
@@ -133,14 +147,9 @@ public final class MatchManager: MatchSessionDelegate {
         return  !match.isWon && matchTimer.isRunning && !isRestRound
     }
 
-    private func sendStatusEvent() {
+    private func sendTimerUpdate() {
         do {
-            let statusEvent = ControlEvent.status(
-                time: matchTimer.displayTime,
-                scoringDisabled: scoringDisabled,
-                round: isRestRound ? nil : round
-            )
-            try session.send(controlEvent: statusEvent)
+            try session.send(statusUpdate: .timer(displayTime: matchTimer.displayTime, scoringDisabled: scoringDisabled))
         } catch(let error) {
             log(error: error)
         }
@@ -172,7 +181,9 @@ public final class MatchManager: MatchSessionDelegate {
         print(match.winningPlayer?.name ?? "No winning player")
         matchTimer.stop()
         match.status = .completed
-        try? session.send(controlEvent: ControlEvent(category: .endMatch, judgeID: "timer"))
+        if let winner = match.winningPlayer {
+            try? session.send(statusUpdate: .won(winningColor: winner.color))
+        }
     }
 
     // MARK: - MatchSessionDelegate
@@ -186,6 +197,7 @@ public final class MatchManager: MatchSessionDelegate {
             match.redScore += scoringEvent.category.pointValue
         }
 
+        try? session.send(statusUpdate: .score(red: match.redScore, blue: match.blueScore))
         checkMatchStatus()
     }
 

@@ -19,23 +19,30 @@ public final class MatchSession {
     }
 
     private var connections: [String: WebSocket] = [:]
+    private var judges: [String] = []
 
     private var receivedEventInfo: (event: ScoringEvent, count: Int)?
 
     weak var delegate: MatchSessionDelegate?
 
-    func addConnection(judgeID: String, socket: WebSocket) {
-        connections[judgeID] = socket
+    func addJudge(judgeID: String, socket: WebSocket) {
+        judges.append(judgeID)
+        addConnection(participantID: judgeID, socket: socket)
+    }
+
+    func addConnection(participantID: String, socket: WebSocket) {
+        connections[participantID] = socket
     }
 
     func removeConnection(socket: WebSocket) {
         if let removedKey = connections.filter ({ $0.value === socket }).first?.key {
             connections.removeValue(forKey: removedKey)
+            judges = judges.filter { $0 != removedKey }
         }
     }
 
-    func send(controlEvent: ControlEvent) throws {
-        try send(jsonString: controlEvent.jsonString)
+    func send(statusUpdate: StatusUpdate) throws {
+        try send(jsonString: statusUpdate.jsonString)
     }
 
     private func send(jsonString: String?) throws {
@@ -68,11 +75,10 @@ public final class MatchSession {
 
     private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
-        log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(connections.count) judges")
+        log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(judges.count) judges")
 
-        if confirmationInfo.count >= Int(ceil(Double(connections.count) / 2)) {
+        if confirmationInfo.count >= Int(ceil(Double(judges.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
-            try send(jsonString: confirmationInfo.event.jsonString)
             log("\(confirmationInfo.event.description) confirmed")
         } else {
             log("\(confirmationInfo.event.description) not confirmed")

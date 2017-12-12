@@ -6,7 +6,9 @@
 //
 
 import Foundation
-import JSON
+import Vapor
+
+// BACKEND RECEIVE ONLY
 
 struct ControlEvent: Event {
     enum Category: String {
@@ -19,42 +21,57 @@ struct ControlEvent: Event {
     }
 
     let eventType: EventType = .control
-    let judgeID: String
-    let data: [String : String]
+    let participantID: String
 
-    var category: Category {
-        guard
-            let categoryRaw = data[JSONKey.category],
-            let category = Category(rawValue: categoryRaw)
-            else { fatalError("Control event must contain category data") }
-        return category
+    let category: Category
+    let color: PlayerColor?
+    let value: Int?
+
+    init(operatorID: String, category: Category, color: PlayerColor? = nil, value: Int? = nil) {
+        self.participantID = operatorID
+        self.category = category
+        self.color = color
+        self.value = value
     }
 
-    var color: PlayerColor? {
-        guard
-            let colorRaw = data[JSONKey.color],
-            let color = PlayerColor(rawValue: colorRaw)
-            else { return nil }
-        return color
-    }
+    init(json: JSON) throws {
+        participantID = try json.get(JSONKey.participantID)
+        guard let category = (try json.get(path: [JSONKey.data, JSONKey.category]) { Category(rawValue: $0) }) else {
+            throw Abort(.badRequest, reason: "Control event data must include valid category")
+        }
+        self.category = category
 
-    var value: Int? {
-        guard let valueString = data[JSONKey.value] else { return nil }
-        return Double(valueString)?.toInt
-    }
+        do {
+            self.color = try json.get(path: [JSONKey.data, JSONKey.color]) { PlayerColor(rawValue: $0) }
+        } catch {
+            self.color = nil
+        }
 
-    init(judgeID: String, data: [String : String]) {
-        self.judgeID = judgeID
-        self.data = data
-
-        if data[JSONKey.category] == nil {
-            fatalError("Event data must contain category data")
+        do {
+            self.value = try json.get(path: [JSONKey.data, JSONKey.value]) { $0 }
+        } catch {
+            self.value = nil
         }
     }
 
-    init(category: Category, judgeID: String) {
-        let data = [JSONKey.category : category.rawValue]
-        self.init(judgeID: judgeID, data: data)
+    func makeJSON() throws -> JSON {
+        var json = JSON()
+        try json.set(participantID, JSONKey.participantID)
+
+        var dataJSON = JSON()
+        try dataJSON.set(JSONKey.category, category.rawValue)
+
+        if let color = color {
+            try dataJSON.set(JSONKey.color, color.rawValue)
+        }
+
+        if let value = value {
+            try dataJSON.set(JSONKey.value, value)
+        }
+
+        try json.set(JSONKey.data, dataJSON)
+
+        return json
     }
 }
 
@@ -67,8 +84,8 @@ extension JSON {
             return try? ScoringEvent(json: self)
         case .control:
             return try? ControlEvent(json: self)
-        case .newJudge:
-            return try? NewJudgeEvent(json: self)
+        case .newParticipant:
+            return try? NewParticipantEvent(json: self)
         }
     }
 }
@@ -76,7 +93,7 @@ extension JSON {
 // MARK: - Timer Events
 
 extension ControlEvent {
-    static let statusJudgeID = "status"
+    static let statusParticipantID = "status"
 
     static func status(time: String, scoringDisabled: Bool, round: Int?) -> ControlEvent {
         var data = [
@@ -89,7 +106,7 @@ extension ControlEvent {
             data[JSONKey.round] = String(round)
         }
 
-        return ControlEvent(judgeID: statusJudgeID, data: data)
+        return ControlEvent(operatorID: statusParticipantID, category: .status)
     }
 }
 

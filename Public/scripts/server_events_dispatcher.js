@@ -99,7 +99,7 @@ Control
 categories:
     pause
     play
-    addJudge
+    newParticipant
 
 Scoring
 {
