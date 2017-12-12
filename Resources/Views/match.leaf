@@ -16,7 +16,7 @@
 	</div>
 
 	<div class="overlay-wrapper">
-		#if(overlay-visible) {
+		#if(overlay_visible) {
 			<div class="overlay">
 				<div class="red">
                     <div class="top">
@@ -56,17 +56,17 @@
 	<div class="scoring">
 
 	    <div class="red">
-	        <div class="score #(red-score-class)">#(red-score)</div>
+	        <div class="score #(red_score_class)">#(match.red_score)</div>
 	    </div>
 
 	    <div class="blue">
-	        <div class="score #(blue-score-class)">#(blue-score)</div>
+	        <div class="score #(blue_score_class)">#(match.blue_score)</div>
 	    </div>
 
 		<div class="penalty-background">
 			<div class="penalties">
 				<div id="red-penalty">
-					#repeat(red-gamjeom-count) {
+					#repeat(match.red_penalties) {
 						<div class="penalty">
 							<div class="gam-jeom"></div>
 						</div>
@@ -74,7 +74,7 @@
 				</div>
 
 				<div id="blue-penalty">
-					#repeat(blue-gamjeom-count) {
+					#repeat(match.blue_penalties) {
 						<div class="penalty">
 							<div class="gam-jeom"></div>
 						</div>
@@ -86,7 +86,7 @@
 
 	<script type="text/javascript">
 		var regex = /match\/(.*?)\//
-        var index = #(match-id);
+        var index = #(match.id);
 		console.log(index)
 		var scoring = Scoring(window.location.host + "/match-ws/" + index)
 	</script>

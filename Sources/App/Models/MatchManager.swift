@@ -116,17 +116,14 @@ public final class MatchManager: MatchSessionDelegate {
     }
 
     func sendStatusUpdate(for event: ControlEvent) {
-        let statusUpdate: StatusUpdate?
         switch event.category {
         case .giveGamJeom, .removeGamJeom:
-            statusUpdate = .penalties(red: match.redPenalties, blue: match.bluePenalties)
+            try? session.send(statusUpdate: .penalties(red: match.redPenalties, blue: match.bluePenalties))
+            try? session.send(statusUpdate: .score(red: match.redScore, blue: match.blueScore))
         case .adjustScore:
-            statusUpdate = .score(red: match.redScore, blue: match.blueScore)
+            try? session.send(statusUpdate: .score(red: match.redScore, blue: match.blueScore))
         default:
-            statusUpdate = nil
-        }
-        if let update = statusUpdate {
-            try? session.send(statusUpdate: update)
+            break
         }
         checkMatchStatus()
     }
@@ -218,7 +215,7 @@ extension MatchManager: JSONRepresentable {
 
     public func makeJSON() throws -> JSON {
         var json = JSON()
-        try json.set(JSONKey.match, match)
+        try json.set(JSONKey.match, match.makeJSON())
         try json.set(JSONKey.round, round)
         try json.set(JSONKey.redScoreClass, match.winningPlayer?.color == .red ? "blink" : "")
         try json.set(JSONKey.blueScoreClass, match.winningPlayer?.color == .blue ? "blink" : "")
