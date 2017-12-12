@@ -28,12 +28,12 @@ public final class MatchManager: MatchSessionDelegate {
     public let match: Match
     private let session = MatchSession()
 
-    private let matchTimer: MatchTimer
+    fileprivate let matchTimer: MatchTimer
 
     private var isRestRound = false
     private var currentRoundDuration: TimeInterval = 0
 
-    private var scoringDisabled: Bool {
+    fileprivate var scoringDisabled: Bool {
         return !match.isWon && (!matchTimer.isRunning || isRestRound)
     }
 
@@ -62,14 +62,6 @@ public final class MatchManager: MatchSessionDelegate {
             type: type
         )
         self.init(match: match)
-    }
-
-    public func makeNode() throws -> Node {
-        var nodeData = match.nodeLiteral
-        nodeData[NodeKey.time] = Node(matchTimer.displayTime)
-        nodeData[NodeKey.overlayVisible] = scoringDisabled
-        nodeData[NodeKey.round] = round
-        return try nodeData.makeNode(in: nil)
     }
 
     func received(event: Event, from socket: WebSocket) throws {
@@ -213,6 +205,30 @@ public final class MatchManager: MatchSessionDelegate {
     }
 }
 
+extension MatchManager: JSONRepresentable {
+    private struct JSONKey {
+        static let match = "match"
+        static let round = "round"
+        static let redScoreClass = "red_score_class"
+        static let blueScoreClass = "blue_score_class"
+        static let time = "time"
+        static let overlayVisible = "overlay_visible"
+        static let status = "status"
+    }
+
+    public func makeJSON() throws -> JSON {
+        var json = JSON()
+        try json.set(JSONKey.match, match)
+        try json.set(JSONKey.round, round)
+        try json.set(JSONKey.redScoreClass, match.winningPlayer?.color == .red ? "blink" : "")
+        try json.set(JSONKey.blueScoreClass, match.winningPlayer?.color == .blue ? "blink" : "")
+        try json.set(JSONKey.time, matchTimer.displayTime)
+        try json.set(JSONKey.overlayVisible, scoringDisabled)
+        try json.set(JSONKey.status, match.status.rawValue)
+        return json
+    }
+}
+
 private extension Match {
 
     var isWon: Bool {
@@ -270,51 +286,6 @@ private extension Match {
         } else if bluePenalties >= Match.maxPenalties {
             winningPlayer = redPlayer
         }
-    }
-}
-
-fileprivate struct NodeKey {
-    static let matchID = "match-id"
-    static let matchType = "match-type"
-    static let date = "date"
-    static let redName = "red-player"
-    static let redScore = "red-score"
-    static let redGamJeomCount = "red-gamjeom-count"
-    static let blueName = "blue-player"
-    static let blueScore = "blue-score"
-    static let blueGamJeomCount = "blue-gamjeom-count"
-    static let round = "round"
-    static let blueScoreClass = "blue-score-class"
-    static let redScoreClass = "red-score-class"
-    static let time = "time"
-    static let overlayVisible = "overlay-visible"
-    static let status = "status"
-}
-
-extension Match: NodeRepresentable {
-    public func makeNode(in context: Context?) throws -> Node {
-        return try Node(node: nodeLiteral)
-    }
-
-    public func makeJSON() throws -> JSON {
-        return try JSON(makeNode(in: nil))
-    }
-
-    public var nodeLiteral: [String : NodeRepresentable] {
-        return [
-            NodeKey.matchID : id,
-            NodeKey.matchType : type.rawValue,
-            NodeKey.date : date.timeStampString,
-            NodeKey.redName : redPlayer.displayName.uppercased(),
-            NodeKey.redScore : String(redScore),
-            NodeKey.redGamJeomCount : redPenalties,
-            NodeKey.redScoreClass : winningPlayer?.color == .red ? "blink" : "",
-            NodeKey.blueName : bluePlayer.displayName.uppercased(),
-            NodeKey.blueScore : String(blueScore),
-            NodeKey.blueGamJeomCount : bluePenalties,
-            NodeKey.blueScoreClass: winningPlayer?.color == .blue ? "blink" : "",
-            NodeKey.status : status.rawValue
-        ]
     }
 }
 

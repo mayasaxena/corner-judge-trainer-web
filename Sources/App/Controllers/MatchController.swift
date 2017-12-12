@@ -26,19 +26,18 @@ public final class MatchController {
             populateMatchesIfNecessary()
         }
 
-        let matchNodes = try matchManagers.values
+        let matchesJSON = try matchManagers.values
             .filter { $0.match.status != .completed }
-            .map { try $0.match.makeNode(in: nil) }
+            .map { try $0.match.makeJSON() }
 
-        let context = [
-            "matches" : Node.array(matchNodes),
-            "match-count" : Node(matchNodes.count)
-        ] as Node
+        var json = JSON()
+        try json.set("matches", matchesJSON)
+        try json.set("match-count", matchesJSON.count)
 
         if request.headers["Content-Type"] == "application/json" {
-            return JSON(context)
+            return json
         } else {
-            return try drop.view.make("index", context)
+            return try drop.view.make("index", json)
         }
     }
 
@@ -54,7 +53,7 @@ public final class MatchController {
 
     public func show(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
         guard let manager = matchManagers[id] else { throw Abort.notFound }
-        return try drop.view.make("match", manager.makeNode())
+        return try drop.view.make("match", manager.makeJSON())
     }
 
     private func populateMatchesIfNecessary() {

@@ -118,13 +118,12 @@ function Scoring(host) {
     server.bind("status", function(data) {
         if (data.timer != undefined || data.round != undefined) {
             // $(".match-info").load(document.URL + " .match-info > *")
-        }
             console.log("timer update");
+        }
             // $('.overlay-wrapper').load(document.URL +  ' .overlay-wrapper > *');
         else if (data.score != undefined) {
             // $('.scoring').load(document.URL +  ' .scoring > *');
-
-        }
+            
         } else {
         }
     })

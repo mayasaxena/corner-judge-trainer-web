@@ -34,36 +34,8 @@ struct ScoringEvent: Event {
 
     let eventType: EventType = .scoring
     let participantID: String
-//    let data: [String : String]
-
     let category: Category
-
-//    var category: Category {
-//        guard
-//            let categoryRaw = data[JSONKey.category],
-//            let category = Category(rawValue: categoryRaw)
-//            else { fatalError("Scoring event must contain category data") }
-//        return category
-//    }
-
     let color: PlayerColor
-
-//    var color: PlayerColor {
-//        guard
-//            let colorRaw = data[JSONKey.color],
-//            let color = PlayerColor(rawValue: colorRaw)
-//            else { fatalError("Scoring event must contain player color") }
-//        return color
-//    }
-
-//    init(judgeID: String, data: [String : String]) {
-//        self.judgeID = judgeID
-////        self.data = data
-//
-//        if data[JSONKey.category] == nil {
-//            fatalError("Event data must contain category data")
-//        }
-//    }
 
     init(judgeID: String, category: Category, color: PlayerColor) {
         self.participantID = judgeID

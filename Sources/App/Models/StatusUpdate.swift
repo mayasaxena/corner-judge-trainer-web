@@ -53,7 +53,7 @@ enum StatusUpdate: JSONRepresentable {
             try timerJSON.set(StatusJSONKey.scoringDisabled, scoringDisabled)
             try dataJSON.set(StatusJSONKey.timer, timerJSON)
         case .round(let round):
-            try dataJSON.set(StatusJSONKey.round, round ?? "")
+            try dataJSON.set(StatusJSONKey.round, round)
         case .won(let winningColor):
             try dataJSON.set(StatusJSONKey.won, winningColor.rawValue)
         }
@@ -78,7 +78,7 @@ enum StatusUpdate: JSONRepresentable {
  // OR
      "timer" : {
         "display_time" : "1:10"
-        "scoringDisabled" : "false"
+        "scoring_disabled" : "false"
      }
  // OR
     "round" : "1",
