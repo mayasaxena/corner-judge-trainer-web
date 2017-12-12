@@ -35,10 +35,14 @@ public final class MatchSession {
     }
 
     func removeConnection(socket: WebSocket) {
-        if let removedKey = connections.filter ({ $0.value === socket }).first?.key {
-            connections.removeValue(forKey: removedKey)
-            judges = judges.filter { $0 != removedKey }
+        if let idToRemove = getID(for: socket) {
+            connections.removeValue(forKey: idToRemove)
+            judges = judges.filter { $0 != idToRemove }
         }
+    }
+
+    private func getID(for socket: WebSocket) -> String? {
+        return connections.filter ({ $0.value === socket }).first?.key
     }
 
     func send(statusUpdate: StatusUpdate) throws {
@@ -59,7 +63,12 @@ public final class MatchSession {
     }
 
     // TODO: Refactor to allow events other than first received to be confirmed
-    func received(event: ScoringEvent) throws {
+    func received(event: ScoringEvent, from socket: WebSocket) throws {
+        guard
+            let participantID = getID(for: socket),
+            judges.contains(participantID)
+            else { return }
+
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
                 receivedEventInfo?.count += 1

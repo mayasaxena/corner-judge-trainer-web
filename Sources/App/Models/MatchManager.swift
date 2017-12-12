@@ -68,7 +68,7 @@ public final class MatchManager: MatchSessionDelegate {
         switch event {
         case let scoringEvent as ScoringEvent:
             guard shouldScore(event: scoringEvent) else { return }
-            try session.received(event: scoringEvent)
+            try session.received(event: scoringEvent, from: socket)
         case let controlEvent as ControlEvent:
             handleControlEvent(controlEvent)
         case let newParticipantEvent as NewParticipantEvent:
