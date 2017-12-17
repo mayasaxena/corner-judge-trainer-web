@@ -56,17 +56,17 @@
 	<div class="scoring">
 
 	    <div class="red">
-	        <div class="score #(red_score_class)">#(match.red_score)</div>
+	        <div class="score #(red_score_class)">#(match.red.score)</div>
 	    </div>
 
 	    <div class="blue">
-	        <div class="score #(blue_score_class)">#(match.blue_score)</div>
+	        <div class="score #(blue_score_class)">#(match.blue.score)</div>
 	    </div>
 
 		<div class="penalty-background">
 			<div class="penalties">
 				<div id="red-penalty">
-					#repeat(match.red_penalties) {
+					#repeat(match.red.penalties) {
 						<div class="penalty">
 							<div class="gam-jeom"></div>
 						</div>
@@ -74,7 +74,7 @@
 				</div>
 
 				<div id="blue-penalty">
-					#repeat(match.blue_penalties) {
+					#repeat(match.blue.penalties) {
 						<div class="penalty">
 							<div class="gam-jeom"></div>
 						</div>

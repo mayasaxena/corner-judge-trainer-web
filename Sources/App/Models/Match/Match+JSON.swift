@@ -9,28 +9,34 @@ import JSON
 
 extension Match: JSONRepresentable {
     private struct JSONKey {
-        static let matchID = "id"
-        static let matchType = "type"
+        static let id = "id"
+        static let type = "type"
         static let date = "date"
-        static let redName = "red_player_name"
-        static let redScore = "red_score"
-        static let redPenalties = "red_penalties"
-        static let blueName = "blue_player_name"
-        static let blueScore = "blue_score"
-        static let bluePenalties = "blue_penalties"
+        static let red = "red"
+        static let blue = "blue"
+        static let name = "name"
+        static let score = "score"
+        static let penalties = "penalties"
     }
 
     public func makeJSON() throws -> JSON {
         var json = JSON()
-        try json.set(JSONKey.matchID, id)
-        try json.set(JSONKey.matchType, type.displayName)
-        try json.set(JSONKey.date, date)
-        try json.set(JSONKey.redName, redPlayer.displayName.uppercased())
-        try json.set(JSONKey.redScore, redScore)
-        try json.set(JSONKey.redPenalties, redPenalties)
-        try json.set(JSONKey.blueName, bluePlayer.displayName.uppercased())
-        try json.set(JSONKey.blueScore, blueScore)
-        try json.set(JSONKey.bluePenalties, bluePenalties)
+        try json.set(JSONKey.id, id)
+        try json.set(JSONKey.type, type.rawValue)
+        try json.set(JSONKey.date, date.timeIntervalSince1970)
+
+        var redJSON = JSON()
+        try redJSON.set(JSONKey.name, redPlayer.displayName.uppercased())
+        try redJSON.set(JSONKey.score, redScore)
+        try redJSON.set(JSONKey.penalties, redPenalties)
+        try json.set(JSONKey.red, redJSON)
+
+        var blueJSON = JSON()
+        try blueJSON.set(JSONKey.name, bluePlayer.displayName.uppercased())
+        try blueJSON.set(JSONKey.score, blueScore)
+        try blueJSON.set(JSONKey.penalties, bluePenalties)
+        try json.set(JSONKey.blue, blueJSON)
+
         return json
     }
 }

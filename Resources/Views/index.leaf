@@ -31,13 +31,13 @@
 							<img src="/images/icons/hoguIconRed.png" alt="Icon of a red hogu">
 						</div>
 						<div class="left name">
-							#(match.red_player_name)
+							#(match.red.name)
 						</div>
 						<div class="transparent button">
 							<a href="/match/#(match.id)">JOIN</a>
 						</div>
 						<div class="right name">
-							#(match.blue_player_name)
+							#(match.blue.name)
 						</div>
 						<div class="hogu icon">
 							<img src="/images/icons/hoguIconBlue.png" alt="Icon of a blue hogu">
