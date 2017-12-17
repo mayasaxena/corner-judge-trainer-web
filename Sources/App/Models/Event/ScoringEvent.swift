@@ -44,15 +44,15 @@ struct ScoringEvent: Event {
     }
 
     init(json: JSON) throws {
-        participantID = try json.get(JSONKey.participantID)
+        participantID = try json.get(EventCodingKey.participantID.rawValue)
 
-        guard let category = (try json.get(path: [JSONKey.data, JSONKey.category]) { Category(rawValue: $0)}) else {
+        guard let category = (try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.category.rawValue]) { Category(rawValue: $0)}) else {
             throw Abort(.badRequest, reason: "Scoring event data must contain valid category")
         }
 
         self.category = category
 
-        guard let color = (try json.get(path: [JSONKey.data, JSONKey.color]) { PlayerColor(rawValue: $0)}) else {
+        guard let color = (try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.color.rawValue]) { PlayerColor(rawValue: $0)}) else {
             throw Abort(.badRequest, reason: "Scoring event data must contain valid player color")
         }
 
@@ -61,13 +61,13 @@ struct ScoringEvent: Event {
 
     func makeJSON() throws -> JSON {
         var json = JSON()
-        try json.set(participantID, JSONKey.participantID)
+        try json.set(participantID, EventCodingKey.participantID.rawValue)
 
         var dataJSON = JSON()
-        try dataJSON.set(JSONKey.category, category.rawValue)
-        try dataJSON.set(JSONKey.color, color.rawValue)
+        try dataJSON.set(EventCodingKey.category.rawValue, category.rawValue)
+        try dataJSON.set(EventCodingKey.color.rawValue, color.rawValue)
 
-        try json.set(JSONKey.data, dataJSON)
+        try json.set(EventCodingKey.data.rawValue, dataJSON)
 
         return json
     }

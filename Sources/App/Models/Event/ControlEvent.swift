@@ -35,20 +35,20 @@ struct ControlEvent: Event {
     }
 
     init(json: JSON) throws {
-        participantID = try json.get(JSONKey.participantID)
-        guard let category = (try json.get(path: [JSONKey.data, JSONKey.category]) { Category(rawValue: $0) }) else {
+        participantID = try json.get(EventCodingKey.participantID.rawValue)
+        guard let category = (try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.category.rawValue]) { Category(rawValue: $0) }) else {
             throw Abort(.badRequest, reason: "Control event data must include valid category")
         }
         self.category = category
 
         do {
-            self.color = try json.get(path: [JSONKey.data, JSONKey.color]) { PlayerColor(rawValue: $0) }
+            self.color = try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.color.rawValue]) { PlayerColor(rawValue: $0) }
         } catch {
             self.color = nil
         }
 
         do {
-            self.value = try json.get(path: [JSONKey.data, JSONKey.value]) { $0 }
+            self.value = try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.value.rawValue]) { $0 }
         } catch {
             self.value = nil
         }
@@ -56,20 +56,20 @@ struct ControlEvent: Event {
 
     func makeJSON() throws -> JSON {
         var json = JSON()
-        try json.set(participantID, JSONKey.participantID)
+        try json.set(participantID, EventCodingKey.participantID.rawValue)
 
         var dataJSON = JSON()
-        try dataJSON.set(JSONKey.category, category.rawValue)
+        try dataJSON.set(EventCodingKey.category.rawValue, category.rawValue)
 
         if let color = color {
-            try dataJSON.set(JSONKey.color, color.rawValue)
+            try dataJSON.set(EventCodingKey.color.rawValue, color.rawValue)
         }
 
         if let value = value {
-            try dataJSON.set(JSONKey.value, value)
+            try dataJSON.set(EventCodingKey.value.rawValue, value)
         }
 
-        try json.set(JSONKey.data, dataJSON)
+        try json.set(EventCodingKey.data.rawValue, dataJSON)
 
         return json
     }
@@ -77,7 +77,7 @@ struct ControlEvent: Event {
 
 extension JSON {
     func createEvent() -> Event? {
-        guard let eventType = EventType(value: self[JSONKey.eventType]?.string) else { return nil }
+        guard let eventType = EventType(value: self[EventCodingKey.eventType.rawValue]?.string) else { return nil }
 
         switch eventType {
         case .scoring:
@@ -87,26 +87,6 @@ extension JSON {
         case .newParticipant:
             return try? NewParticipantEvent(json: self)
         }
-    }
-}
-
-// MARK: - Timer Events
-
-extension ControlEvent {
-    static let statusParticipantID = "status"
-
-    static func status(time: String, scoringDisabled: Bool, round: Int?) -> ControlEvent {
-        var data = [
-            JSONKey.category : ControlEvent.Category.status.rawValue,
-            JSONKey.time : time,
-            JSONKey.scoringDisabled : String(scoringDisabled)
-        ]
-
-        if let round = round {
-            data[JSONKey.round] = String(round)
-        }
-
-        return ControlEvent(operatorID: statusParticipantID, category: .status)
     }
 }
 

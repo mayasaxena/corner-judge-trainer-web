@@ -18,31 +18,41 @@ public final class MatchSession {
         static let confirmationInterval = 1.0
     }
 
-    private var connections: [String: WebSocket] = [:]
-    private var judges: [String] = []
+    private typealias ParticipantConnection = (type: ParticipantType, socket: WebSocket)
+    private var connections: [String: ParticipantConnection] = [:]
+
+    private var judgeIDs: [String] {
+        return connections
+            .filter { $0.value.type == .judge }
+            .map { $0.key }
+    }
+
+    private var operatorIDs: [String] {
+        return connections
+            .filter { $0.value.type == .operator }
+            .map { $0.key }
+    }
 
     private var receivedEventInfo: (event: ScoringEvent, count: Int)?
 
     weak var delegate: MatchSessionDelegate?
 
-    func addJudge(judgeID: String, socket: WebSocket) {
-        judges.append(judgeID)
-        addConnection(participantID: judgeID, socket: socket)
-    }
-
-    func addConnection(participantID: String, socket: WebSocket) {
-        connections[participantID] = socket
+    func addConnection(participantID: String, participantType: ParticipantType, socket: WebSocket) {
+        connections[participantID] = (participantType, socket)
     }
 
     func removeConnection(socket: WebSocket) {
         if let idToRemove = getID(for: socket) {
             connections.removeValue(forKey: idToRemove)
-            judges = judges.filter { $0 != idToRemove }
         }
     }
 
     private func getID(for socket: WebSocket) -> String? {
-        return connections.filter ({ $0.value === socket }).first?.key
+        return connections.filter ({ $0.value.socket === socket }).first?.key
+    }
+
+    func isOperator(participantID: String) -> Bool {
+        return operatorIDs.contains(participantID)
     }
 
     func send(statusUpdate: StatusUpdate) throws {
@@ -57,17 +67,14 @@ public final class MatchSession {
             throw Abort(.badRequest, reason: message)
         }
 
-        for (_, socket) in connections {
-            try socket.send(json)
+        for (_, connection) in connections {
+            try connection.socket.send(json)
         }
     }
 
     // TODO: Refactor to allow events other than first received to be confirmed
-    func received(event: ScoringEvent, from socket: WebSocket) throws {
-        guard
-            let participantID = getID(for: socket),
-            judges.contains(participantID)
-            else { return }
+    func received(event: ScoringEvent) throws {
+        guard judgeIDs.contains(event.participantID) else { return }
 
         if receivedEventInfo != nil {
             if event == receivedEventInfo?.event {
@@ -84,9 +91,9 @@ public final class MatchSession {
 
     private func confirmScoringEvent() throws {
         guard let confirmationInfo = receivedEventInfo else { return }
-        log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(judges.count) judges")
+        log("\(confirmationInfo.event.description) scored by \(confirmationInfo.count) of \(judgeIDs.count) judges")
 
-        if confirmationInfo.count >= Int(ceil(Double(judges.count) / 2)) {
+        if confirmationInfo.count >= Int(ceil(Double(judgeIDs.count) / 2)) {
             delegate?.sessionDidConfirmScoringEvent(scoringEvent: confirmationInfo.event)
             log("\(confirmationInfo.event.description) confirmed")
         } else {

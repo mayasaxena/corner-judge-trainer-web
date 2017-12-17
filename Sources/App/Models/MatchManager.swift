@@ -68,18 +68,14 @@ public final class MatchManager: MatchSessionDelegate {
         switch event {
         case let scoringEvent as ScoringEvent:
             guard shouldScore(event: scoringEvent) else { return }
-            try session.received(event: scoringEvent, from: socket)
+            try session.received(event: scoringEvent)
+
         case let controlEvent as ControlEvent:
+            guard session.isOperator(participantID: controlEvent.participantID) else { return}
             handleControlEvent(controlEvent)
+
         case let newParticipantEvent as NewParticipantEvent:
-            switch newParticipantEvent.participantType {
-            case .judge:
-                session.addJudge(judgeID: newParticipantEvent.participantID, socket: socket)
-            case .operator:
-                session.addConnection(participantID: newParticipantEvent.participantID, socket: socket)
-            default:
-                break
-            }
+            session.addConnection(participantID: newParticipantEvent.participantID, participantType: newParticipantEvent.participantType, socket: socket)
             sendTimerUpdate()
         default:
             break

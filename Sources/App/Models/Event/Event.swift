@@ -28,17 +28,17 @@ protocol Event: JSONConvertible {
     var participantID: String { get }
 }
 
-struct JSONKey {
-    static let eventType = "event"
-    static let participantID = "sent_by"
-    static let data = "data"
-    static let category = "category"
-    static let color = "color"
-    static let time = "time"
-    static let scoringDisabled = "scoringDisabled"
-    static let round = "round"
-    static let value = "value"
-    static let participantType = "participant_type"
+enum EventCodingKey: String, CodingKey {
+    case eventType = "event"
+    case participantID = "sent_by"
+    case data
+    case category
+    case color
+    case time
+    case scoringDisabled = "scoring_disabled"
+    case round
+    case value
+    case participantType = "participant_type"
 }
 
 extension JSONRepresentable {
@@ -47,16 +47,14 @@ extension JSONRepresentable {
     }
 }
 
-
 // BACKEND RECEIVE ONLY
+enum ParticipantType: String {
+    case judge
+    case `operator`
+    case viewer
+}
 
 struct NewParticipantEvent: Event {
-
-    enum ParticipantType: String {
-        case judge
-        case `operator`
-        case viewer
-    }
 
     let eventType = EventType.newParticipant
     let participantID: String
@@ -68,21 +66,21 @@ struct NewParticipantEvent: Event {
     }
 
     init(json: JSON) throws {
-        participantID = try json.get(JSONKey.participantID)
+        participantID = try json.get(EventCodingKey.participantID.rawValue)
         let createParticipantType: (String) throws -> ParticipantType = {
             guard let type = ParticipantType(rawValue: $0) else {
                 throw Abort(.badRequest, reason: "Participant request must contain valid participant type")
             }
             return type
         }
-        participantType = try json.get(path: [JSONKey.data, JSONKey.participantType], transform: createParticipantType)
+        participantType = try json.get(path: [EventCodingKey.data.rawValue, EventCodingKey.participantType.rawValue], transform: createParticipantType)
     }
 
     func makeJSON() throws -> JSON {
         var json = JSON()
-        try json.set(JSONKey.eventType, eventType.rawValue)
-        try json.set(JSONKey.participantID, participantID)
-        try json.set(JSONKey.participantType, participantType.rawValue)
+        try json.set(EventCodingKey.eventType.rawValue, eventType.rawValue)
+        try json.set(EventCodingKey.participantID.rawValue, participantID)
+        try json.set(EventCodingKey.participantType.rawValue, participantType.rawValue)
         return json
     }
 }
