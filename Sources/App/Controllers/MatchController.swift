@@ -42,9 +42,13 @@ public final class MatchController {
     }
 
     public func create(request: Request) throws -> ResponseRepresentable {
-        let match = Match()
+        return try drop.view.make("create-match")
+    }
+
+    public func store(request: Request) throws -> ResponseRepresentable {
+        let match = try request.createMatch()
         matchManagers[match.id] = MatchManager(match: match)
-        return Response(redirect: "show")
+        return Response(redirect: "/")
     }
 
     public func edit(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
@@ -54,6 +58,18 @@ public final class MatchController {
     public func show(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
         guard let manager = matchManagers[id] else { throw Abort.notFound }
         return try drop.view.make("match", manager.makeJSON())
+    }
+
+    public func destroy(_ request: Request, _ id: Int) throws -> ResponseRepresentable {
+        if let index = matchManagers.index(forKey: id) {
+            matchManagers.remove(at: index)
+        }
+        return Response(redirect: "/")
+    }
+
+    public func clear(_ request: Request) throws -> ResponseRepresentable {
+        matchManagers.removeAll()
+        return Response(redirect: "/")
     }
 
     private func populateMatchesIfNecessary() {
@@ -91,8 +107,21 @@ extension MatchController: ResourceRepresentable {
         return Resource(
             index: index,
             create: create,
+            store: store,
             show: show,
-            edit: edit
+            edit: edit,
+            destroy: destroy
+            clear: clear
         )
+    }
+}
+
+extension Request {
+    func createMatch() throws -> Match {
+        guard
+            let formURLEncoded = formURLEncoded,
+            let json = try? JSON(node: formURLEncoded)
+            else { throw Abort.badRequest }
+        return try Match(json: json)
     }
 }

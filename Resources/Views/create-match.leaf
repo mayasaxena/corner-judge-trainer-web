@@ -1,0 +1,44 @@
+#extend("base")
+
+#export("head") {
+	<title>Create Match #(id)</title>
+    <link rel="stylesheet" href="/styles/create-match.css">
+}
+
+#export("body") {
+    <div class="form">
+        <form id="create-match" action="/match" method="POST">
+            <div class="form-element">
+                <div class="red hogu icon">
+                    <img src="/images/icons/hoguIconRed.png" alt="Icon of a red hogu">
+                </div>
+                <div class="red field">
+                    <div class="red label">RED PLAYER NAME</div>
+                    <input type="text" name="red-name" value="" required>
+                </div>
+                <div class="blue field">
+                    <div class="label">BLUE PLAYER NAME</div>
+                    <input type="text" name="blue-name" value="" required>
+                </div>
+                <div class="blue hogu icon">
+                    <img src="/images/icons/hoguIconBlue.png" alt="Icon of a blue hogu">
+                </div>
+            </div>
+            <div class="type form-element">
+                <div class="field">
+                    <div class="label">MATCH TYPE</div>
+                    <select form="create-match" name="type" required>
+                      <option value=0>A-Team</option>
+                      <option value=1>B-Team</option>
+                      <option value=2>C-Team</option>
+                      <option value=3>Custom</option>
+                      <option value=4>None</option>
+                    </select>
+                </div>
+            </div>
+            <div class="submit form-element">
+                <input type="submit" value="CREATE" class="large transparent create button"/>
+            </div>
+        </form>
+    </div>
+}

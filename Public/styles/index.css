@@ -76,7 +76,6 @@ html, body {
 }
 
 .transparent.button {
-    border: 1px solid #f6f6f6;
     flex: 0 0 10em;
     display: flex;
     justify-content: center;
@@ -117,11 +116,6 @@ html, body {
 .hogu.icon {
     display: inline;
     flex: 0;
-}
-
-.hogu.icon img {
-    width: 2em;
-    height: auto;
 }
 
 .no-matches {

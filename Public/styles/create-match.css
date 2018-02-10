@@ -1,0 +1,67 @@
+/* CREATE */
+
+html, body {
+    background-color: #3e3e3e;
+}
+
+.form {
+    margin: auto;
+    width: 60%;
+}
+
+#create-match {
+    display: flex;
+    flex-direction: column
+}
+
+.form-element {
+    display: flex;
+    margin: 1em 0 1em 0;
+}
+
+.hogu.icon {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    background-color: #272727;
+    padding: 1em;
+    border-radius: 7px;
+    height: 5em;
+    width: 5em;
+}
+
+.field {
+    display: flex;
+    flex-flow: column;
+    flex-grow: 1;
+    margin: 1em;
+}
+
+.label {
+    margin-bottom: 1em;
+}
+
+.blue .label {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.blue input[type=text] {
+    text-align: right;
+}
+
+input[type=text], select {
+    flex-grow: 1;
+}
+
+.type.form-element .field {
+    align-items: center;
+}
+
+.type.form-element select {
+    width: 10em;
+}
+
+.submit.form-element {
+    justify-content: center;
+}

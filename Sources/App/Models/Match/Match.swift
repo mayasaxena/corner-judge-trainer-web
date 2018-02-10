@@ -61,16 +61,15 @@ public final class Match {
     fileprivate(set) var redPlayer: Player
     fileprivate(set) var bluePlayer: Player
 
-    init(
-        id: Int = Int.random(3),
-        redPlayerName: String? = nil,
-        bluePlayerName: String? = nil,
-        type: MatchType = .none
-    ) {
-        self.id = id
+    init(id: Int? = nil,
+         redPlayerName: String? = nil,
+         bluePlayerName: String? = nil,
+         type: MatchType? = nil) {
+
+        self.id = id ?? Int.random(3)
         self.redPlayer = Player(color: .red, name: redPlayerName)
         self.bluePlayer = Player(color: .blue, name: bluePlayerName)
-        self.type = type
+        self.type = type ?? .none
     }
 
     public func determineWinner() {

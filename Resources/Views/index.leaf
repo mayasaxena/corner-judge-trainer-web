@@ -13,7 +13,7 @@
 			JOIN A MATCH
 		</div>
 		<div class="create-match large blue button">
-			CREATE A MATCH
+            <a href="/match/create">CREATE A MATCH</a>
 		</div>
 	</div>
 	#greaterThan(match-count, "0") {

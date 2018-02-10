@@ -6,8 +6,9 @@
 //
 
 import JSON
+import Vapor
 
-extension Match: JSONRepresentable {
+extension Match: JSONConvertible {
     private struct JSONKey {
         static let id = "id"
         static let type = "type"
@@ -17,6 +18,18 @@ extension Match: JSONRepresentable {
         static let name = "name"
         static let score = "score"
         static let penalties = "penalties"
+    }
+
+    public convenience init(json: JSON) throws {
+        let id: Int? = try? json.get(JSONKey.id)
+        do {
+            let redName: String = try json.get("\(JSONKey.red)-\(JSONKey.name)")
+            let blueName: String = try json.get("\(JSONKey.blue)-\(JSONKey.name)")
+            let type: MatchType? = try json.get(path: [JSONKey.type]) { MatchType(rawValue: $0) }
+            self.init(id: id, redPlayerName: redName, bluePlayerName: blueName, type: type)
+        } catch {
+            throw Abort.badRequest
+        }
     }
 
     public func makeJSON() throws -> JSON {
@@ -40,3 +53,4 @@ extension Match: JSONRepresentable {
         return json
     }
 }
+
