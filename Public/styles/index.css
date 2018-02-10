@@ -124,6 +124,22 @@ html, body {
     text-align: center;
 }
 
+.delete {
+}
+
+.x.button {
+    margin-left: 1em;
+    margin-right: -3em;
+    margin-top: auto;
+    margin-bottom: auto;
+    display: flex;
+    align-items: center;
+    flex: 0 0 1em;
+    height: 2em;
+    line-height: 1em;
+    font-size: 0.6em;
+}
+
 @media screen and (max-width: 900px) {
     .match {
         display: none;

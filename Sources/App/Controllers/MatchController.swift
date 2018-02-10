@@ -67,11 +67,6 @@ public final class MatchController {
         return Response(redirect: "/")
     }
 
-    public func clear(_ request: Request) throws -> ResponseRepresentable {
-        matchManagers.removeAll()
-        return Response(redirect: "/")
-    }
-
     private func populateMatchesIfNecessary() {
         guard matchManagers.isEmpty else { return }
 
@@ -111,17 +106,13 @@ extension MatchController: ResourceRepresentable {
             show: show,
             edit: edit,
             destroy: destroy
-            clear: clear
         )
     }
 }
 
 extension Request {
     func createMatch() throws -> Match {
-        guard
-            let formURLEncoded = formURLEncoded,
-            let json = try? JSON(node: formURLEncoded)
-            else { throw Abort.badRequest }
-        return try Match(json: json)
+        guard let formURLEncoded = formURLEncoded else { throw Abort.badRequest }
+        return try Match(json: JSON(node: formURLEncoded))
     }
 }

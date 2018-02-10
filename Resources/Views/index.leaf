@@ -3,7 +3,7 @@
 #export("head") {
 	<title>Corner</title>
 	<link rel="stylesheet" href="/styles/index.css">
-
+    <script type="text/javascript" src="/scripts/delete.js"></script>
 }
 
 #export("body") {
@@ -12,9 +12,7 @@
 		<div class="join-match title">
 			JOIN A MATCH
 		</div>
-		<div class="create-match large blue button">
-            <a href="/match/create">CREATE A MATCH</a>
-		</div>
+        <a class="create-match large blue button" href="/match/create">CREATE A MATCH</a>
 	</div>
 	#greaterThan(match-count, "0") {
 		#loop(matches, "match") {
@@ -44,6 +42,7 @@
 						</div>
 					</div>
 				</div>
+				<button value=#(match.id) class="transparent x button">X</button>
 			</div>
 		}
 	} ##else() {
